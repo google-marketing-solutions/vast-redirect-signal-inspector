@@ -12,7 +12,16 @@ This tool provides comprehensive analysis, scoring, and reporting on the signals
 * **SDK Support:** Supports IMA SDK, PAL SDK, and PAI implementations.
 * **User-Friendly Interface:** Clear and concise output, designed for easy understanding.
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for details.
+
+## License
+
+Apache 2.0; see [`LICENSE`](LICENSE) for details
+
 ## Disclaimer
+
 This is not an officially supported Google product. This project is not
 eligible for the [Google Open Source Software Vulnerability Rewards
 Program](https://bughunters.google.com/open-source-security).
