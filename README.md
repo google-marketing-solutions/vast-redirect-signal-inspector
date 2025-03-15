@@ -6,11 +6,11 @@ This tool provides comprehensive analysis, scoring, and reporting on the signals
 
 ## Features
 
-* **Signal Quality Scoring:** Provides detailed scores and reports on signal quality.
-* **Parameter Validation:** Identifies missing or incorrect parameters within signals.
-* **Issue Reporting:** Generates information, warnings, and errors for troubleshooting.
-* **SDK Support:** Supports IMA SDK, PAL SDK, and PAI implementations.
-* **User-Friendly Interface:** Clear and concise output, designed for easy understanding.
+- **Signal Quality Scoring:** Provides detailed scores and reports on signal quality.
+- **Parameter Validation:** Identifies missing or incorrect parameters within signals.
+- **Issue Reporting:** Generates information, warnings, and errors for troubleshooting.
+- **SDK Support:** Supports IMA SDK, PAL SDK, and PAI implementations.
+- **User-Friendly Interface:** Clear and concise output, designed for easy understanding.
 
 ## Contributing
 
