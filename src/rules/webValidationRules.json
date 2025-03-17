@@ -1,0 +1,31 @@
+{
+  "type": "web",
+  "lastUpdated": "2025-03-06",
+  "parameters": {
+    "required": [
+      "correlator",
+      "description_url",
+      "env",
+      "gdfp_req",
+      "iu",
+      "output",
+      "sz",
+      "url"
+    ],
+    "recommended": ["unviewed_position_start"],
+    "programmatic": {
+      "required": ["ott_placement", "plcmt", "vpa", "vpmute"],
+      "recommended": [
+        "aconp",
+        "dth",
+        "givn",
+        "hl",
+        "omid_p",
+        "vconp",
+        "vid_d",
+        "vpos",
+        "wta"
+      ]
+    }
+  }
+}
