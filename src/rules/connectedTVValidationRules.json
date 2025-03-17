@@ -1,0 +1,32 @@
+{
+  "type": "connectedTV",
+  "lastUpdated": "2025-03-06",
+  "parameters": {
+    "required": ["correlator", "env", "gdfp_req", "iu", "output", "sz", "url"],
+    "programmatic": {
+      "required": [
+        "idtype",
+        "is_lat",
+        "ott_placement",
+        "plcmt",
+        "rdid",
+        "vpa",
+        "vpmute"
+      ],
+      "recommended": [
+        "aconp",
+        "an",
+        "dth",
+        "givn",
+        "hl",
+        "msid",
+        "omid_p",
+        "sid",
+        "vconp",
+        "vid_d",
+        "vpos",
+        "wta"
+      ]
+    }
+  }
+}

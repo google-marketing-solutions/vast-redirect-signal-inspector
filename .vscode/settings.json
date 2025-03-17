@@ -1,0 +1,23 @@
+{
+  "editor.tabSize": 2,
+  "editor.rulers": [80],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "cSpell.words": [
+    "Bordihn",
+    "Markus",
+  ],
+  "cSpell.ignorePaths": [
+    "package.json",
+    "package-lock.json",
+    "*.yml",
+    ".vscode",
+    "locales",
+    "node_modules"
+  ],
+  "[xml]": {
+    "editor.defaultFormatter": "DotJoshJohnson.xml"
+  },
+}

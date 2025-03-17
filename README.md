@@ -1,4 +1,4 @@
-# VAST Redirect Signal Inspector
+# VAST Redirect Signal Inspector (beta)
 
 The VAST Redirect Signal Inspector is an open-source tool designed to analyze and validate Google VAST redirects, ensuring optimal signal quality for IMA SDK, PAL SDK, and PAI implementations.
 

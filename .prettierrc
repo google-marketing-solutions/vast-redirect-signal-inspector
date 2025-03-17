@@ -1,0 +1,13 @@
+{
+  "endOfLine":"auto",
+  "printWidth": 80,
+  "singleQuote": true,
+  "overrides": [
+    {
+      "files": ["src/index.html"],
+      "options": {
+        "printWidth": 550
+      }
+    }
+  ]
+}

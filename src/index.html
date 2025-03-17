@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <!-- Copyright 2025 Google LLC
+       Author: mbordihn@google.com (Markus Bordihn)
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. -->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png" />
+    <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#00baef" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="VAST Redirect Signal Inspector" />
+    <meta name="application-name" content="VAST Redirect Signal Inspector" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="The VAST Redirect Signal Inspector is an open-source tool designed to analyze and validate Google VAST redirects, ensuring optimal signal quality for IMA SDK, PAL SDK, and PAI implementations." />
+    <% for (let item in htmlWebpackPlugin.files.css) { %> <% if (htmlWebpackPlugin.files.css[item] == '/css/app.css') { %>
+    <style>
+      <%= compilation.assets['css/app.css'].source() %>
+    </style>
+    <% } else { %>
+    <link rel="preload" href="<%= htmlWebpackPlugin.files.css[item] %>" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="<%= htmlWebpackPlugin.files.css[item] %>" /></noscript>
+    <% } %> <% } %>
+    <script>
+      globalThis.BOOT_TIME = Date.now();
+      globalThis.APP_ASSETS = ['/',<% for (key in compilation.assets) { %>'<%= key %>', <% } %>];
+    </script>
+    <% for (let item in htmlWebpackPlugin.files.js) { %> <% if (htmlWebpackPlugin.files.js[item] == '/js/serviceWorker.js') { %>
+    <script async src="<%= htmlWebpackPlugin.files.js[item] %>"></script>
+    <% } %> <% } %> <% if (process.env.NODE_ENV === 'production') { %>
+    <script>
+      if (typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ === 'object') {
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function () {};
+      }
+    </script>
+    <% } %>
+  </head>
+  <body>
+    <div id="app"></div>
+    <% for (let item in htmlWebpackPlugin.files.js) { %> <% if (htmlWebpackPlugin.files.js[item] == '/cache-service-worker.js' || htmlWebpackPlugin.files.js[item] == '/preview-service-worker.js') { %> <% } else { %>
+    <script defer src="<%= htmlWebpackPlugin.files.js[item] %>"></script>
+    <% } %> <% } %> <% if (process.env.NODE_ENV === 'development') { %>
+    <hr />
+    <a href="?redirect=https%3A%2F%2Fpubads.g.doubleclick.net%2Fgampad%2Fads%3Fiu%3D%2F21775744923%2Fexternal%2Fsingle_ad_samples%26sz%3D640x480%26cust_params%3Dsample_ct%253Dlinear%26ciu_szs%3D300x250%252C728x90%26gdfp_req%3D1%26output%3Dvast%26unviewed_position_start%3D1%26env%3Dvp%26impl%3Ds%26correlator%3D">Test Standard</a>
+    <a
+      href="?redirect=https%3A%2F%2Fpubads.g.doubleclick.net%2Fgampad%2Fads%3Fiu%3D%2F21775744923%2Fexternal%2Fsingle_ad_samples%26sz%3D640x480%26cust_params%3Dsample_ct%253Dlinear%26ciu_szs%3D300x250%252C728x90%26gdfp_req%3D1%26output%3Dvast%26unviewed_position_start%3D1%26env%3Dvp%26impl%3Ds%26givn%3DAQzzBGQEVGjRW4svCeU1wKejaeWhATJKF8aSNC5L1tYtef8HbnrkSGMNeJ_9T2TlaiR1_a3raO06REP-0GXOufeAFhKUqEGb1jr_GnFF2JPkIb2XSoHFulgoqv_LT-eSbtLoyvth8twEDkitZc_x5oG7ZeM5HG9p0uN7PsxNozcRzSKJ0YR8r3piDMICB0dHo3QinJJe8WbesSgoTC3sLMnSZPxyKr9HO_PNq01x6S9wdaoPSomG6yBt-zu19Sb-PmILZa4Pax0P_moNAZHLTo7RIaPHeCj3qTdLVplhhC2lWwFLrSiHXeDefaoi4sl4elyvItt6KKGoRjAAwQAuyDNFWxGMghrGF5Z0N7-BANG7dutg-K78XPB9m5SBCEYPU_lFrGjs9zii9QxKPpj7pkn-4FuEov6jXwuYG1TRHLjYFrHR4uYDgeIDwWFGyIxIpsFUESrjO2BqP5EZ7F_TOJ98-TkaoV4B0_da60y08VZZqOT0n_hxZDlPDzxCNFRWdBoFEN7PLR_4N-t0Tm0PuJgiWiye0W5_7HXyiTvIEgdFiiLwwmFsB5d72vUaKYJi1HOc9eJSEjC7YOG6ag0kqP1C61dW1BAVuAb0OFR5UJk0zA10cjgQULeHvC0BCIvLL5qcxBKEvUCHmV4RC6oe4bk3u3tVwe7lynNjFbNvAitgbbJum_38R_8V1dYNj-YGApbIuq4nfD9PWQpHodG2c9TfFhOufJ6MDeVaJPCFF9bprUf63MqPmGGjV4-sBW0GUizqRc6XMkdp3pt1cpVli6jqHqDV4tYvfXS9pLgXbdR9u3YaFK2rZQWphq5JClbWWvPAOsesmHTtRXQ6SlJR_dLd2GPfIR3HO3Y7qATwiRiYXkFFTw..%26correlator%3D"
+      >Test PAL</a
+    >
+    <a href="?redirect=https%3A%2F%2Fserverside.doubleclick.net%2Fgampad%2Fads%3Fiu%3D%2F21775744923%2Fexternal%2Fsingle_ad_samples%26sz%3D640x480%26cust_params%3Dsample_ct%253Dlinear%26ciu_szs%3D300x250%252C728x90%26gdfp_req%3D1%26output%3Dvast%26unviewed_position_start%3D1%26env%3Dvp%26impl%3Ds%26ssss%3Dvast_url_validator_test%26ip%3D1.2.3.4%26correlator%3D">Test PAI</a>
+    <a
+      href="?redirect=https%3A%2F%2Fpagead2.googlesyndication.com%2Fgampad%2Fads%3Fiu%3D%252F21775744923%252Fexternal%252Fsingle_ad_samples%26sz%3D640x480%26cust_params%3Dsample_ct%253Dlinear%26ciu_szs%3Dfluid%257C728x90%252Cfluid%257C300x250%252Cfluid%257C180x150%252Cfluid%257C120x60%252Cfluid%257C88x31%252Cfluid%257C300x60%252Cfluid%257C300x100%252Cfluid%257C320x50%252Cfluid%257C468x60%252Cfluid%257C300x600%252Cfluid%257C160x600%26gdfp_req%3D1%26output%3Dxml_vast4%26unviewed_position_start%3D1%26env%3Dvp%26correlator%3D2920090807217010%26sdkv%3Dh.3.688.0%26osd%3D2%26frm%3D0%26vis%3D1%26sdr%3D1%26hl%3Den%26afvsz%3D200x200%252C250x250%252C300x250%252C450x50%252C468x60%252C480x70%26is_amp%3D0%26uach%3DWyJtYWNPUyIsIjE1LjMuMSIsImFybSIsIiIsIjEzMy4wLjY5NDMuMTQzIixudWxsLDAsbnVsbCwiNjQiLFtbIk5vdChBOkJyYW5kIiwiOTkuMC4wLjAiXSxbIkdvb2dsZSBDaHJvbWUiLCIxMzMuMC42OTQzLjE0MyJdLFsiQ2hyb21pdW0iLCIxMzMuMC42OTQzLjE0MyJdXSwwXQ..%26u_so%3Dl%26ctv%3D0%26mpt%3Dh5_vsi%26sdki%3D445%26ptt%3D20%26adk%3D1083529519%26sdk_apis%3D2%252C7%252C8%26omid_p%3DGoogle1%252Fh.3.688.0%26media_url%3Dhttps%253A%252F%252Fs0.2mdn.net%252F4253510%252Fgoogle_ddm_animation_480P.mp4%26sid%3D143B1AB4-F655-425F-B5C2-D49BC807C875%26nel%3D1%26td%3D1%26eid%3D95322027%252C95326337%252C95331589%252C95332046%252C95351091%26ref%3Dhttps%253A%252F%252Fwww.google.com%252F%26url%3Dhttps%253A%252F%252Fgoogleads.github.io%252Fgoogleads-ima-html5%252Fvsi%252F%26dlt%3D1741201107292%26idt%3D496%26dt%3D1741201112814%26pvsid%3D342258371105668%26scor%3D768096627554145"
+      >Test IMA SDK</a
+    >
+    <a href="?">Unknown</a>
+    <% } %>
+  </body>
+</html>

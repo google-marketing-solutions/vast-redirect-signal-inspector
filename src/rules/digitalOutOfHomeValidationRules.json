@@ -1,0 +1,20 @@
+{
+  "type": "digitalOutOfHome",
+  "lastUpdated": "2025-03-06",
+  "parameters": {
+    "required": [
+      "correlator",
+      "env",
+      "gdfp_req",
+      "iu",
+      "output",
+      "sz",
+      "url",
+      "vpmute"
+    ],
+    "programmatic": {
+      "required": ["idtype", "is_lat", "plcmt", "rdid", "sid", "venuetype"],
+      "recommended": ["aconp", "an", "dth", "givn", "hl", "msid", "omid_p"]
+    }
+  }
+}
