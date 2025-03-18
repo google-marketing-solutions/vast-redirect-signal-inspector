@@ -101,7 +101,7 @@ class VastURLScore extends React.Component {
       data && data.analysis
         ? data.analysis.parameters.required.score +
           data.analysis.parameters.programmatic.required.score +
-          data.analysis.parameters.programmatic.recommended.score * 0.5
+          data.analysis.parameters.programmatic.recommended.score
         : 0;
     return (
       <Grid
@@ -133,7 +133,7 @@ class VastURLScore extends React.Component {
             sx={{
               '--CircularProgress-trackThickness': '20px',
               '--CircularProgress-size': '150px',
-              '--CircularProgress-progressThickness': '20px',
+              '--CircularProgress-progressThickness': '25px',
             }}
             variant="soft"
             determinate

@@ -1,0 +1,63 @@
+[
+  {
+    "name": "adWillAutoPlay",
+    "override": "vpa",
+    "description": "Indicates whether the ad will autoplay.",
+    "examples": ["true", "false"],
+    "validation": "^(true|false)$"
+  },
+  {
+    "name": "adWillPlayMuted",
+    "override": "vpmute",
+    "description": "Indicates whether the ad will play muted.",
+    "examples": ["true", "false"],
+    "validation": "^(true|false)$"
+  },
+  {
+    "name": "descriptionUrl",
+    "override": "description_url",
+    "description": "The URL of the page where the ad will be displayed.",
+    "examples": ["https://www.example.com"],
+    "validation": "^(https?|ftp)://[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$"
+  },
+  {
+    "name": "ppid",
+    "override": "ppid",
+    "description": "The publisher-provided identifier for the user.",
+    "examples": [
+      "12JD92JD8078S8J29SDOAKC0EF230337",
+      "12jd92jd8078s8j29sdoakc0ef230337",
+      "12Jd92jD8078s8j29sDoakc0ef230337",
+      "123e4567-e89b-12d3-a456-426614174000"
+    ],
+    "validation": "^[0-9a-zA-Z+.=/_\\-$,{}]{22,150}$"
+  },
+  {
+    "name": "omidPartnerName",
+    "override": "omid_p",
+    "description": "The name of the Open Measurement Interface Definition (OMID) partner.",
+    "examples": ["examplepartnername"],
+    "validation": "^[a-zA-Z0-9_]+$"
+  },
+  {
+    "name": "omidPartnerVersion",
+    "override": "omid_p",
+    "description": "The version of the Open Measurement Interface Definition (OMID) partner.",
+    "examples": ["1.0.0"],
+    "validation": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+  },
+  {
+    "name": "url",
+    "override": "url",
+    "description": "The URL of the ad request.",
+    "examples": ["https://www.example.com/ad_request"],
+    "validation": "^https?://[^\\s/$.?#].[^\\s]*$"
+  },
+  {
+    "name": "continuousPlayback",
+    "override": "vconp",
+    "description": "Indicates whether the video player will continue playing after the ad.",
+    "examples": ["true", "false"],
+    "validation": "^(true|false)$"
+  }
+]

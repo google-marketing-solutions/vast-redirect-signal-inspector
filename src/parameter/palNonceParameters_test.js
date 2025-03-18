@@ -15,14 +15,14 @@
  */
 
 /**
- * @fileoverview VAST Ad Tag Parameters Validation
+ * @fileoverview PAL Nonce Parameters Validation
  * @author mbordihn@google.com (Markus Bordihn)
  */
 
-import vastAdTagParameters from './vastAdTagParameters.json';
+import palNonceParameters from './palNonceParameters.json';
 
 describe('vastAdTagParameters Validation', () => {
-  vastAdTagParameters.forEach((item) => {
+  palNonceParameters.forEach((item) => {
     it(`Should validate ${item.name} example against the validation regex`, () => {
       const examples = item.examples;
       const validation = item.validation;
