@@ -7,7 +7,10 @@
   "files.insertFinalNewline": true,
   "cSpell.words": [
     "Bordihn",
-    "Markus",
+    "correlator",
+    "gdfp",
+    "instream",
+    "Markus"
   ],
   "cSpell.ignorePaths": [
     "package.json",

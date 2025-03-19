@@ -52,12 +52,16 @@ class VastURLValidator {
     try {
       const parsedUrl = new URL(this.url);
       const hostname = parsedUrl.hostname;
+      const pathname = parsedUrl.pathname;
       const searchParams = parsedUrl.searchParams;
 
+      // Check for valid VAST tags.
       let tagType = TAG_TYPE.UNKNOWN;
       if (
         hostname === 'pubads.g.doubleclick.net' ||
-        hostname === 'securepubads.g.doubleclick.net'
+        hostname === 'securepubads.g.doubleclick.net' ||
+        (hostname.endsWith('.corp.google.com') &&
+          pathname.startsWith('/gampad/ads'))
       ) {
         if (searchParams.has('givn')) {
           tagType = TAG_TYPE.PAL;

@@ -35,6 +35,8 @@ import {
   Tooltip,
   styled,
 } from '@mui/material';
+
+import HelpCenterIcon from '@mui/icons-material/HelpCenter';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -90,6 +92,22 @@ class VastURLParameters extends React.PureComponent {
   };
 
   /**
+   * @param {string} name
+   * @return {string}
+   */
+  getVastAdTagParameterHelp = (name) => {
+    if (!vastAdTagParameters) {
+      return '';
+    }
+    for (const item of vastAdTagParameters) {
+      if (item.name === name) {
+        return item.help;
+      }
+    }
+    return '';
+  };
+
+  /**
    * @param {*} params
    * @param {string} title
    * @return {React.ReactNode}
@@ -106,15 +124,21 @@ class VastURLParameters extends React.PureComponent {
           <Table>
             <StyledTableHead>
               <TableRow>
-                <StyledTableCell sx={{ width: '50px' }}>Status</StyledTableCell>
-                <StyledTableCell>Parameter</StyledTableCell>
+                <StyledTableCell sx={{ width: '25px' }}>Status</StyledTableCell>
+                <StyledTableCell sx={{ width: '50px' }}>
+                  Parameter
+                </StyledTableCell>
+                <StyledTableCell sx={{ width: '15px' }}></StyledTableCell>
                 <StyledTableCell>Value</StyledTableCell>
-                <StyledTableCell>Score</StyledTableCell>
+                <StyledTableCell sx={{ width: '50px' }}>Score</StyledTableCell>
               </TableRow>
             </StyledTableHead>
             <TableBody>
               {Object.values(params.params).map((param) => (
-                <StyledTableRow key={param.name}>
+                <StyledTableRow
+                  key={param.name}
+                  style={{ position: 'relative' }}
+                >
                   <StyledTableCell sx={{ width: '50px' }}>
                     {param.exists ? (
                       param.valid ? (
@@ -138,6 +162,19 @@ class VastURLParameters extends React.PureComponent {
                     >
                       {param.name}
                     </Tooltip>
+                  </StyledTableCell>
+                  <StyledTableCell>
+                    {this.getVastAdTagParameterHelp(param.name) && (
+                      <a
+                        href={this.getVastAdTagParameterHelp(param.name)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <HelpCenterIcon
+                          style={{ fontSize: '1rem', marginLeft: '5px' }}
+                        />
+                      </a>
+                    )}
                   </StyledTableCell>
                   <StyledTableCell>
                     {param.value && typeof param.value === 'object' ? (
@@ -179,7 +216,7 @@ class VastURLParameters extends React.PureComponent {
                       ) : (
                         <Typography variant="body2" component="span">
                           {}
-                        </Typography> // Leeres Object
+                        </Typography>
                       )
                     ) : (
                       <Typography variant="body2" component="span">
@@ -190,6 +227,25 @@ class VastURLParameters extends React.PureComponent {
                     )}
                   </StyledTableCell>
                   <StyledTableCell>{param.score}</StyledTableCell>
+                  {param.override && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1,
+                        fontSize: '0.8rem',
+                      }}
+                    >
+                      Overridden by the PAL SDK Nonce !
+                    </div>
+                  )}
                 </StyledTableRow>
               ))}
             </TableBody>
@@ -217,7 +273,7 @@ class VastURLParameters extends React.PureComponent {
         )}
         {this.renderTable(
           data.analysis.parameters.programmatic.recommended,
-          'Programmatic Recommended Parameters',
+          'Recommended Programmatic Parameters',
         )}
         {this.renderTable(data.analysis.parameters.other, 'Other Parameters')}
       </div>

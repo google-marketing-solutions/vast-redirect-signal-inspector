@@ -214,7 +214,7 @@ class App extends React.Component {
       vastTagType && detectedVastTagType && vastTagType !== detectedVastTagType;
     return (
       <Container
-        maxWidth="md"
+        maxWidth="lg"
         sx={{
           mt: 5,
           display: 'flex',

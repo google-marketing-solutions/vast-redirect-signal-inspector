@@ -25,6 +25,7 @@
 class VastURLParser {
   static ErrorCode = {
     URL_EMPTY: 'URL is empty.',
+    PPSJ_PARSE_ERROR: 'Error parsing ppsj parameter.',
   };
 
   /**
@@ -43,6 +44,7 @@ class VastURLParser {
       return { success: false, error: VastURLParser.ErrorCode.URL_EMPTY };
     }
 
+    let errorMessage = '';
     const params = {};
     const queryString = this.url.includes('?') ? this.url.split('?')[1] : '';
     if (queryString) {
@@ -65,13 +67,24 @@ class VastURLParser {
               decodeURIComponent(custValue);
           }
           params[decodedKey] = custParamsList;
+        } else if (decodedKey === 'ppsj') {
+          try {
+            const decodedBase64Value = atob(decodedValue);
+            params[decodedKey] = JSON.parse(
+              decodeURIComponent(decodedBase64Value),
+            );
+          } catch (error) {
+            console.error('Error parsing ppsj:', error);
+            errorMessage = VastURLParser.ErrorCode.PPSJ_PARSE_ERROR;
+            params[decodedKey] = decodedValue;
+          }
         } else {
           params[decodedKey] = decodeURIComponent(value);
         }
       });
     }
 
-    return { success: true, params };
+    return { success: true, params, error: errorMessage };
   }
 }
 
