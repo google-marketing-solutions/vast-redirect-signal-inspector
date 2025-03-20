@@ -229,7 +229,7 @@ class App extends React.Component {
     event.preventDefault();
     switch (key) {
       case 'Home':
-        window.location.href = '/';
+        window.location.href = '/vast-redirect-signal-inspector/';
         break;
       case 'Source':
         window.open(
