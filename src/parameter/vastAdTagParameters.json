@@ -52,8 +52,18 @@
   {
     "name": "output",
     "description": "The output format of the ad (e.g., vmap, vast, or vpaid).",
-    "examples": ["xml_vast4"],
-    "validation": "^(vast|xml_vast4|vast_4|vast3|vast2|vast1|vpaid|vmap)$",
+    "examples": [
+      "vast",
+      "vmap",
+      "xml_vmap1",
+      "xml_vast2",
+      "xml_vast3",
+      "xml_vast4",
+      "xml_vmap1_vast4",
+      "xml_vmap1",
+      "xml_vmap1_vast3"
+    ],
+    "validation": "^(vast(_[2-4])?|vmap(_[1])?|xml_vast[2-4]|xml_vmap[1](_vast[3-4])?(_vpaid)?|vpaid)$",
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#output&zippy=%2Coutput-output"
   },
   {
@@ -165,7 +175,11 @@
   {
     "name": "msid",
     "description": "App ID parameter helps identify the app where the ad will be displayed.",
-    "examples": ["com.package.publisher", "com.publisher.deviceplatform", "com.tubitv"],
+    "examples": [
+      "com.package.publisher",
+      "com.publisher.deviceplatform",
+      "com.tubitv"
+    ],
     "validation": "^[a-z]{2,3}\\.[a-z]+(\\.[a-z]+)?$"
   },
   {
