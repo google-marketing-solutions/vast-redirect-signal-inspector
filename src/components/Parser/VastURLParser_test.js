@@ -136,7 +136,7 @@ describe('VastURLParser', () => {
     expect(result.params.output).toBe('vast');
   });
 
-  it('Should fail parse an ppjs value', () => {
+  it('Should fail parse an invalid ppjs value', () => {
     const parser = new VastURLParser(
       'https://example.com?ppsj=invalid&output=vast',
     );
