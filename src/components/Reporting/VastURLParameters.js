@@ -259,21 +259,22 @@ class VastURLParameters extends React.PureComponent {
    */
   render() {
     const { data } = this.props;
+    const analysisResult = data || {};
     return (
       <div>
         {this.renderTable(
-          data.analysis.parameters.required,
+          analysisResult.requiredParameters,
           'Required Parameters',
         )}
         {this.renderTable(
-          data.analysis.parameters.programmatic.required,
+          analysisResult.programmaticRequiredParameters,
           'Required Programmatic Parameters',
         )}
         {this.renderTable(
-          data.analysis.parameters.programmatic.recommended,
+          analysisResult.programmaticRecommendedParameters,
           'Recommended Programmatic Parameters',
         )}
-        {this.renderTable(data.analysis.parameters.other, 'Other Parameters')}
+        {this.renderTable(analysisResult.otherParameters, 'Other Parameters')}
       </div>
     );
   }

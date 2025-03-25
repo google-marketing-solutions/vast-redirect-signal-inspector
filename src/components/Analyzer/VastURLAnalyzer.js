@@ -29,6 +29,7 @@ import palNonceParameters from '../../parameter/palNonceParameters.json';
 import vastAdTagParameters from '../../parameter/vastAdTagParameters.json';
 import webValidationRules from '../../rules/webValidationRules.json';
 
+import VastTagAnalyzerResult from './VastTagAnalyzerResult';
 import VastTagParameterResult from './VastTagParameterResult';
 
 /**
@@ -54,12 +55,12 @@ class VastURLAnalyzer {
    * @param {IMPLEMENTATION_TYPE} implementationType
    * @constructor
    */
-  constructor(vastParams, vastTagType, implementationType) {
+  constructor(vastURL, vastParams, vastTagType, implementationType) {
+    this.vastURL = vastURL;
+    this.vastParams = vastParams;
     this.vastTagType = vastTagType;
     this.implementationType = implementationType;
-    this.vastParams = vastParams;
     this.state = {
-      vastUrl: '',
       analysisResult: null,
       metadata: null,
       vastAdTagParameters: null,
@@ -68,7 +69,7 @@ class VastURLAnalyzer {
   }
 
   /**
-   * @return {Object}
+   * @return {VastTagAnalyzerResult}
    */
   analyze() {
     if (!this.vastParams || Object.keys(this.vastParams).length === 0) {
@@ -81,7 +82,9 @@ class VastURLAnalyzer {
     console.info(
       'Analyzing',
       this.vastTagType,
-      'VAST URL for',
+      'VAST URL ',
+      this.vastURL,
+      'for',
       this.implementationType,
       'with',
       this.vastParams,
@@ -189,20 +192,16 @@ class VastURLAnalyzer {
     );
     const specialParamsResult = {};
 
-    const analysis = {
-      date: new Date(),
-      parameters: {
-        required: requiredParamsResult,
-        programmatic: {
-          required: programmaticRequiredParamsResult,
-          recommended: programmaticRecommendedParamsResult,
-        },
-        other: otherParamsResult,
-        special: specialParamsResult,
-      },
-    };
-    console.log('Analysis', analysis);
-    return { success: true, analysis };
+    const analysisResult = new VastTagAnalyzerResult(this.vastURL);
+    analysisResult.requiredParameters = requiredParamsResult;
+    analysisResult.programmaticRequiredParameters =
+      programmaticRequiredParamsResult;
+    analysisResult.programmaticRecommendedParameters =
+      programmaticRecommendedParamsResult;
+    analysisResult.otherParameters = otherParamsResult;
+    analysisResult.specialParameters = specialParamsResult;
+    console.log('Analysis Result', analysisResult);
+    return { success: true, analysisResult };
   }
 
   /**

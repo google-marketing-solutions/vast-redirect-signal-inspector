@@ -121,7 +121,6 @@ class App extends React.Component {
   validateUrl(url) {
     const validator = new VastURLValidator(url);
     const validationResult = validator.validate();
-
     if (validationResult.success) {
       this.setState({
         error: null,
@@ -202,22 +201,23 @@ class App extends React.Component {
 
     // Analyze URL
     const analyzer = new VastURLAnalyzer(
+      vastRedirectURL,
       parseResult.params,
       this.state.vastTagType,
       this.state.implementationType,
     );
-    const analysisResult = analyzer.analyze();
-    if (!analysisResult.success) {
+    const analyzerResult = analyzer.analyze();
+    if (!analyzerResult.success) {
       await new Promise((resolve) => {
         this.setState(
-          { error: analysisResult.error, analysisResult: {} },
+          { error: analyzerResult.error, analysisResult: {} },
           resolve,
         );
       });
       return;
     }
     await new Promise((resolve) => {
-      this.setState({ analysisResult: analysisResult }, resolve);
+      this.setState({ analysisResult: analyzerResult.analysisResult }, resolve);
     });
   }
 
@@ -246,7 +246,7 @@ class App extends React.Component {
     }
   }
 
-  handleExampleClick() {
+  handleExampleClick(event) {
     event.preventDefault();
     const { vastTagType } = this.state;
     console.log(vastTagType);
@@ -356,7 +356,7 @@ class App extends React.Component {
             >
               <TextField
                 label="Vast Redirect URL"
-                value={this.state.vastRedirectURL}
+                value={vastRedirectURL}
                 variant="outlined"
                 fullWidth
                 sx={{ mr: 2 }}
@@ -368,8 +368,10 @@ class App extends React.Component {
                 size="large"
                 onClick={this.handleAnalyzeClick}
                 disabled={
-                  !this.vastRedirectURL ||
-                  this.state.vastTagType === TAG_TYPE.UNKNOWN
+                  !vastRedirectURL ||
+                  (analysisResult &&
+                    Object.keys(analysisResult).length > 0 &&
+                    vastRedirectURL === analysisResult.url)
                 }
               >
                 Analyze
@@ -421,9 +423,8 @@ class App extends React.Component {
                     onClick={this.handleExampleClick}
                     sx={{ ml: 2 }}
                     disabled={
-                      this.state.vastTagType === TAG_TYPE.UNKNOWN ||
-                      this.state.vastRedirectURL ===
-                        examples[this.state.vastTagType]
+                      vastTagType === TAG_TYPE.UNKNOWN ||
+                      vastRedirectURL === examples[vastTagType]
                     }
                   >
                     Load Example
