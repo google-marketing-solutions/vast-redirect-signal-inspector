@@ -26,7 +26,7 @@ import { TAG_TYPE } from '../../constants';
  */
 class VastURLValidator {
   static ErrorCode = {
-    URL_EMPTY: 'URL is empty.',
+    URL_EMPTY: 'Empty URL.',
     INVALID_URL: 'Invalid URL.',
   };
 

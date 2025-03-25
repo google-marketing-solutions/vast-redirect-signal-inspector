@@ -73,36 +73,33 @@ class VastURLScore extends React.Component {
    */
   render() {
     const { data } = this.props;
-    const requiredParametersScore =
-      data && data.analysis
-        ? Math.floor(
-            (data.analysis.parameters.required.valid /
-              data.analysis.parameters.required.total) *
-              100,
-          )
-        : 0;
-    const requiredProgrammaticParametersScore =
-      data && data.analysis
-        ? Math.floor(
-            (data.analysis.parameters.programmatic.required.valid /
-              data.analysis.parameters.programmatic.required.total) *
-              100,
-          )
-        : 0;
-    const recommendedProgrammaticParametersScore =
-      data && data.analysis
-        ? Math.floor(
-            (data.analysis.parameters.programmatic.recommended.valid /
-              data.analysis.parameters.programmatic.recommended.total) *
-              100,
-          )
-        : 0;
-    const totalScore =
-      data && data.analysis
-        ? data.analysis.parameters.required.score +
-          data.analysis.parameters.programmatic.required.score +
-          data.analysis.parameters.programmatic.recommended.score
-        : 0;
+    const analysisResult = data || {};
+    const requiredParametersScore = analysisResult
+      ? Math.floor(
+          (analysisResult.requiredParameters.valid /
+            analysisResult.requiredParameters.total) *
+            100,
+        )
+      : 0;
+    const requiredProgrammaticParametersScore = analysisResult
+      ? Math.floor(
+          (analysisResult.programmaticRequiredParameters.valid /
+            analysisResult.programmaticRequiredParameters.total) *
+            100,
+        )
+      : 0;
+    const recommendedProgrammaticParametersScore = analysisResult
+      ? Math.floor(
+          (analysisResult.programmaticRecommendedParameters.valid /
+            analysisResult.programmaticRecommendedParameters.total) *
+            100,
+        )
+      : 0;
+    const totalScore = analysisResult
+      ? analysisResult.requiredParameters.score +
+        analysisResult.programmaticRequiredParameters.score +
+        analysisResult.programmaticRecommendedParameters.score
+      : 0;
     return (
       <Grid
         container
