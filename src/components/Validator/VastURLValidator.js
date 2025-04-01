@@ -63,7 +63,10 @@ class VastURLValidator {
         (hostname.endsWith('.corp.google.com') &&
           pathname.startsWith('/gampad/ads'))
       ) {
-        if (searchParams.has('givn')) {
+        if (
+          searchParams.has('givn') ||
+          searchParams.has('paln')
+        ) {
           tagType = TAG_TYPE.PAL;
         } else {
           tagType = TAG_TYPE.STANDARD;
