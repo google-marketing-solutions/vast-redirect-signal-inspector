@@ -47,7 +47,8 @@
       "/network_code/ad_unit/sub_ad_unit.en/sport/f-1"
     ],
     "validation": "^(/[a-zA-Z0-9_.-]+)+$",
-    "help": "https://support.google.com/admanager/answer/10678356?hl=en#iu&zippy=%2Ciu-ad-unit"
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#iu&zippy=%2Ciu-ad-unit",
+    "aliases": ["slotname"]
   },
   {
     "name": "output",
@@ -214,7 +215,8 @@
       "AQzzBGQESh0MfW7LFqGLz9GePWVVUAgC5JabPBXGhnX7y_r59X7WD5azuX2RAyrTRlRYgW2EATaB7otaVj9xHqlo5oeeBrrmYrcNpeEsPL9OnK1sB8Gr4xzEZniqv0BnSrgpcFF4Rx9dbtUFV1wki7M2Yz3tJo7Sd7KMMBWMrGpoNcj-7IPbYbBGW8raYln0GDj2Bk-pJEBJZL1obkVS7w7zfT4i6BFqCJPyhPibox84ZRrsasRT97TREUmZ9c_VLjehwt9MrV3fmjqnRaYUJ1EU_4-64p4fxaStEc6JGZhFHSokoZihaysiRGqIYiSRLlmVHA6OUUSnoY45rCVoAtK_8AEoJFjyQQ3s8p2haTdB8xqe7aP7hq3S97a7ipWJ75GueL0REUP9oqfvMP1RwBdBSDN-9UV83bxjyA5GpsdK3NLCJskqyjfCyhrPy6R0xZ-SjI85e395zjft2RTWm38MUUmp9ES0NXFQC1G0G67gI0zwg2M-f0M5LUy9pqPAfgDyW73qQChID2yuUtONJxjIOq1OnyZ1eOqKX8CDcoPIj2jKsuQgqAPpElUP6TgH0_h-RP3LVYEy_BhO9lyiLodBKxIwztj_JGUZYNqb4tVrpwF1EY_DQayIgmrEeKZXfP-UwfhVloOPjOwAeiK0HkFb0krIqCnxVVlqN_ttlBLAE6foMfQtlEHhzzXkBccaWcr5pVTyZy-9an09KtaLlooDEGVj0JYFeJfSkGoqvH8FyGTYXf6f2rIJKi9DRvm-f-7rIops0fJvEFSM5YgeOFbq1H-NOTsA3MPgiyxdZ8BAnU3acr2u35DZaIxg6sbHZ5HQV_LAfUkmqJJ2cb9p4iPhI0YTHoLODF1OLpAQhj4E0r-kVTMElp9rxSgzgYUzzJA6sM2nE6QYU_qhc-2SgWemz2upuW3aBAmElxrXWA9st4FHLMJrrs9krrwCMkB6YWsRVXsZpZqxwDkbvlwrFcLLgExnbSDbsAfIlN5NYI1LV77yP9kNpYpqwghKQjeuOB53HhPhARw-FNAoRA1UkgRD8C61CF68xoNGxTeIbiDE5DIw1xoHFhypIPhUgfQ6VlD2SrIseBX7HE6BxMStdQK4385aGHBLDj_jIHgBZqYpEV56AKMIUOTz8vLxo2_R_o_WLQL-_8XE8YSYMvmnXzHMzjUQO1uNXwF73hriQFQxW4_S7EsqMEqI3cyL-_e0VTf05sdfiBupih9u45PeXG68EILeaG30osYZ2TcvT7LnHKyiJRdCB5zE2Un1V3oFv13c9Fqmr7mkUGLPe1fJDYTfrzenMvizFVB5_9hB_gahjHUiKPpDCGsGFmiB31OrdLcArde36SPsZ1KDOubHC0O9_A6eCgAfPie8rZ4WPubXkIGw_d7_"
     ],
     "validation": "^[A-Za-z0-9\\-_]{100,}(?:={0,2}|[.]{1,2})?$",
-    "help": "https://support.google.com/admanager/answer/10678356?hl=en#givn&zippy=%2Cgivn-givn"
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#givn&zippy=%2Cgivn-givn",
+    "aliases": ["paln"]
   },
   {
     "name": "vconp",
