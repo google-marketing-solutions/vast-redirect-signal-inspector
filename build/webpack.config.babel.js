@@ -161,11 +161,6 @@ module.exports = (mode = 'development') => ({
             gitignore: true,
           },
         },
-        /*
-        {
-          from: './assets/favicon/browserconfig.xml',
-          to: './browserconfig.xml',
-        },
         {
           from: './assets/logo',
           to: './assets/logo',
@@ -173,6 +168,19 @@ module.exports = (mode = 'development') => ({
             dot: true,
             gitignore: true,
           },
+        },
+        {
+          from: './assets/png',
+          to: './assets/png',
+          globOptions: {
+            dot: true,
+            gitignore: true,
+          },
+        },
+        /*
+        {
+          from: './assets/favicon/browserconfig.xml',
+          to: './browserconfig.xml',
         },
         {
           from: './assets/icons',

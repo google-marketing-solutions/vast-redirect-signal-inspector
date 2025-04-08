@@ -302,9 +302,22 @@ class App extends React.Component {
             <Typography
               variant="h5"
               component="div"
-              sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
+              sx={{
+                flexGrow: 1,
+                display: { xs: 'none', sm: 'block', verticalAlign: 'middle' },
+              }}
             >
-              VAST Redirect Signal Inspector
+              <img
+                src="https://raw.githubusercontent.com/google-marketing-solutions/vast-redirect-signal-inspector/main/assets/png/logo_home.png"
+                alt="Logo"
+                style={{
+                  height: '0.7em',
+                  width: 'auto',
+                  verticalAlign: 'middle',
+                  margin: '0 10px 5px 0',
+                }}
+              />
+              VAST Signal Inspector
               <span
                 style={{
                   backgroundColor: '#e0e0e0',
