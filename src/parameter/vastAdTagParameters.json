@@ -142,7 +142,7 @@
     "name": "vpa",
     "description": "Indicates whether video content in an ad starts through autoplay or click",
     "examples": ["auto", "click"],
-    "validation": "^(auto|click)$"
+    "validation": "^(auto|click)$",
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cvpa-video-play-automatic"
   },
   {
