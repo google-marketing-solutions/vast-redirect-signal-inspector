@@ -77,7 +77,8 @@
     "name": "unviewed_position_start",
     "description": "The position at which the ad will start playing if it is not in view.",
     "examples": ["1"],
-    "validation": "^\\d+$"
+    "validation": "^\\d+$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cunviewed-position-start-delayed-impressions"
   },
   {
     "name": "ppid",
@@ -134,43 +135,50 @@
     "name": "vpmute",
     "description": "A flag that indicates whether the video player is muted.",
     "examples": ["0", "1"],
-    "validation": "^(0|1)$"
+    "validation": "^(0|1)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cvpmute-video-play-mute"
   },
   {
     "name": "vpa",
     "description": "Indicates whether video content in an ad starts through autoplay or click",
     "examples": ["auto", "click"],
-    "validation": "^(auto|click)$"
+    "validation": "^(auto|click)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cvpa-video-play-automatic"
   },
   {
     "name": "wta",
     "description": "Indicates the video player's support for rendering ad badging 'Why this ad?'",
     "examples": ["0", "1"],
-    "validation": "^(0|1)$"
+    "validation": "^(0|1)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cwta-why-this-ad"
   },
   {
     "name": "hl",
     "description": "The language of the ad request.",
     "examples": ["en", "de", "deu", "ger", "fr"],
-    "validation": "^(?!.*(.)\\1)[a-z]{2,3}$"
+    "validation": "^(?!.*(.)\\1)[a-z]{2,3}$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Chl-language"
   },
   {
     "name": "aconp",
     "description": "Indicates whether the player intends to continuously play audio content.",
     "examples": ["0", "1", "2"],
-    "validation": "^(0|1|2)$"
+    "validation": "^(0|1|2)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Caconp-audio-continuous-play"
   },
   {
     "name": "dth",
     "description": "The device type hint parameter helps reduce device misclassification, specifically on connected TV and set top box environments.",
     "examples": ["1", "2", "3", "4", "5", "6", "7"],
-    "validation": "^(1|2|3|4|5|6|7)$"
+    "validation": "^(1|2|3|4|5|6|7)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cdth-device-type-hint"
   },
   {
     "name": "plcmt",
     "description": "The placement type parameter helps identify the type of ad placement.",
     "examples": ["1", "2"],
-    "validation": "^(1|2)$"
+    "validation": "^(1|2)$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cplcmt-placement"
   },
   {
     "name": "msid",
@@ -180,7 +188,8 @@
       "com.publisher.deviceplatform",
       "com.tubitv"
     ],
-    "validation": "^[a-z]{2,3}\\.[a-z]+(\\.[a-z]+)?$"
+    "validation": "^[a-z]{2,3}\\.[a-z]+(\\.[a-z]+)?$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cmsid-app-id"
   },
   {
     "name": "ciu_szs",
@@ -191,7 +200,8 @@
       "728x90,300x200|300x250",
       "fluid|728x90,fluid|300x250,fluid|180x150,fluid|120x60,fluid|88x31,fluid|300x60,fluid|300x100,fluid|320x50,fluid|468x60,fluid|300x600,fluid|160x600"
     ],
-    "validation": "^(fluid|\\d+x\\d+)(\\|(fluid|\\d+x\\d+))*?(,(fluid|\\d+x\\d+)(\\|(fluid|\\d+x\\d+))*?)*$"
+    "validation": "^(fluid|\\d+x\\d+)(\\|(fluid|\\d+x\\d+))*?(,(fluid|\\d+x\\d+)(\\|(fluid|\\d+x\\d+))*?)*$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cciu-szs-companion-sizes"
   },
   {
     "name": "gdpr_consent",
