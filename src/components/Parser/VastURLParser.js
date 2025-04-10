@@ -81,16 +81,11 @@ class VastURLParser {
             params[decodedKey] = decodedValue;
           }
         } else {
-          const decodedParam = vastAdTagParameters.filter(parameter => {
-            if (parameter.name == decodedKey) {
-              return true;
-            }
-            if (parameter.aliases != null && parameter.aliases.indexOf(decodedKey) >= 0) {
-              return true;
-            } else {
-              return false;
-            }
-          });
+        if (decodedKey) {
+          const decodedParam = vastAdTagParameters.filter(parameter => 
+            parameter.name === decodedKey || 
+            (parameter.aliases && parameter.aliases.includes(decodedKey))
+          );
           if (decodedParam.length > 0) {
             params[decodedParam[0].name] = decodeURIComponent(value);
           } else {
