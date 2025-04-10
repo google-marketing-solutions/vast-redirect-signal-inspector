@@ -32,6 +32,10 @@ const IMASdkVastUrl =
 const custParams = 'cust_params=section%3Dblog%26anotherKey%3Dvalue1%2Cvalue2';
 const ppsjParam =
   'ppsj=eyJQdWJsaXNoZXJQcm92aWRlZFRheG9ub215U2lnbmFscyI6W3sidGF4b25vbXkiOiJJQUJfQ09OVEVOVF8yXzIiLCJ2YWx1ZXMiOlsidjlpM09uIiwiMTg2IiwiNDMyIiwiSkxCQ1U3Il19XX0=';
+const slotnameAliasVastUrl =
+  'https://pubads.g.doubleclick.net/gampad/ads?slotname=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
+const palnAliasVastUrl =
+  'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&paln=AQzzBGQEVGjRW4svCeU1wKejaeWhATJKF8aSNC5L1tYtef8HbnrkSGMNeJ_9T2TlaiR1_a3raO06REP-0GXOufeAFhKUqEGb1jr_GnFF2JPkIb2XSoHFulgoqv_LT-eSbtLoyvth8twEDkitZc_x5oG7ZeM5HG9p0uN7PsxNozcRzSKJ0YR8r3piDMICB0dHo3QinJJe8WbesSgoTC3sLMnSZPxyKr9HO_PNq01x6S9wdaoPSomG6yBt-zu19Sb-PmILZa4Pax0P_moNAZHLTo7RIaPHeCj3qTdLVplhhC2lWwFLrSiHXeDefaoi4sl4elyvItt6KKGoRjAAwQAuyDNFWxGMghrGF5Z0N7-BANG7dutg-K78XPB9m5SBCEYPU_lFrGjs9zii9QxKPpj7pkn-4FuEov6jXwuYG1TRHLjYFrHR4uYDgeIDwWFGyIxIpsFUESrjO2BqP5EZ7F_TOJ98-TkaoV4B0_da60y08VZZqOT0n_hxZDlPDzxCNFRWdBoFEN7PLR_4N-t0Tm0PuJgiWiye0W5_7HXyiTvIEgdFiiLwwmFsB5d72vUaKYJi1HOc9eJSEjC7YOG6ag0kqP1C61dW1BAVuAb0OFR5UJk0zA10cjgQULeHvC0BCIvLL5qcxBKEvUCHmV4RC6oe4bk3u3tVwe7lynNjFbNvAitgbbJum_38R_8V1dYNj-YGApbIuq4nfD9PWQpHodG2c9TfFhOufJ6MDeVaJPCFF9bprUf63MqPmGGjV4-sBW0GUizqRc6XMkdp3pt1cpVli6jqHqDV4tYvfXS9pLgXbdR9u3YaFK2rZQWphq5JClbWWvPAOsesmHTtRXQ6SlJR_dLd2GPfIR3HO3Y7qATwiRiYXkFFTw..&correlator=';
 
 describe('VastURLParser', () => {
   it('Should return an error for an empty URL', () => {
@@ -144,5 +148,27 @@ describe('VastURLParser', () => {
     expect(result.params.ppsj).toBe('invalid');
     expect(result.error).toBe(VastURLParser.ErrorCode.PPSJ_PARSE_ERROR);
     expect(result.params.output).toBe('vast');
+  });
+
+  it('Should correctly parse a VAST URL using slotname alias instead of iu', () => {
+    const parser = new VastURLParser(slotnameAliasVastUrl);
+    const result = parser.parse();
+    expect(result.success).toBe(true);
+    expect(result.params.iu).toBe('/21775744923/external/single_ad_samples');
+  });
+
+  it('Should correctly parse a PAL VAST URL using paln alias instead of givn', () => {
+    const parser = new VastURLParser(palnAliasVastUrl);
+    const result = parser.parse();
+    expect(result.success).toBe(true);
+    expect(result.params.cust_params).toEqual({ sample_ct: 'linear' });
+    expect(result.params.ciu_szs).toBe('300x250,728x90');
+    expect(result.params.gdfp_req).toBe('1');
+    expect(result.params.output).toBe('vast');
+    expect(result.params.unviewed_position_start).toBe('1');
+    expect(result.params.env).toBe('vp');
+    expect(result.params.impl).toBe('s');
+    expect(result.params.givn.startsWith('AQzzBGQ'));
+    expect(result.params.givn.endsWith('FFTw..'));
   });
 });
