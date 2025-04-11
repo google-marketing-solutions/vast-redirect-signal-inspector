@@ -19,8 +19,6 @@
  * @author mbordihn@google.com (Markus Bordihn)
  */
 
-import vastAdTagParameters from '../../parameter/vastAdTagParameters.json';
-
 /**
  * @class
  */
@@ -81,17 +79,7 @@ class VastURLParser {
             params[decodedKey] = decodedValue;
           }
         } else {
-          if (decodedKey) {
-            const decodedParam = vastAdTagParameters.filter(parameter => 
-              parameter.name === decodedKey || 
-              (parameter.aliases && parameter.aliases.includes(decodedKey))
-            );
-            if (decodedParam.length > 0) {
-              params[decodedParam[0].name] = decodeURIComponent(value);
-            } else {
-              params[decodedKey] = decodeURIComponent(value);
-            }
-          }
+          params[decodedKey] = decodeURIComponent(value);
         }
       });
     }

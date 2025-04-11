@@ -29,6 +29,13 @@ class VastURLValidator {
     URL_EMPTY: 'Empty URL.',
     INVALID_URL: 'Invalid URL.',
   };
+  static WarningCode = {
+    LEGACY_PAL_TAG: 'Legacy PAL tag.',
+  };
+  static WarningMessage = {
+    LEGACY_PAL_TAG:
+      'You are using a legacy PAL tag, please update the tag and use the new `givn` parameter instead!',
+  };
 
   /**
    * @param {URL} url
@@ -45,6 +52,8 @@ class VastURLValidator {
       return {
         success: false,
         error: VastURLValidator.ErrorCode.URL_EMPTY,
+        warning: null,
+        warning_message: '',
         tagType: TAG_TYPE.UNKNOWN,
       };
     }
@@ -53,7 +62,25 @@ class VastURLValidator {
       const parsedUrl = new URL(this.url);
       const hostname = parsedUrl.hostname;
       const pathname = parsedUrl.pathname;
+      const protocol = parsedUrl.protocol;
       const searchParams = parsedUrl.searchParams;
+      let warningCode = null;
+      let warningMessage = '';
+
+      // Check for valid protocol.
+      if (protocol !== 'http:' && protocol !== 'https:') {
+        return {
+          success: false,
+          error: VastURLValidator.ErrorCode.INVALID_URL,
+          error_message:
+            'Invalid protocol ' +
+            protocol +
+            '. Only http and https are allowed.',
+          warning: null,
+          warning_message: '',
+          tagType: TAG_TYPE.UNKNOWN,
+        };
+      }
 
       // Check for valid VAST tags.
       let tagType = TAG_TYPE.UNKNOWN;
@@ -63,11 +90,12 @@ class VastURLValidator {
         (hostname.endsWith('.corp.google.com') &&
           pathname.startsWith('/gampad/ads'))
       ) {
-        if (
-          searchParams.has('givn') ||
-          searchParams.has('paln')
-        ) {
+        if (searchParams.has('givn')) {
           tagType = TAG_TYPE.PAL;
+        } else if (searchParams.has('paln')) {
+          tagType = TAG_TYPE.PAL_LEGACY;
+          warningCode = VastURLValidator.WarningCode.LEGACY_PAL_TAG;
+          warningMessage = VastURLValidator.WarningMessage.LEGACY_PAL_TAG;
         } else {
           tagType = TAG_TYPE.STANDARD;
         }
@@ -82,12 +110,19 @@ class VastURLValidator {
       ) {
         tagType = TAG_TYPE.IMA_SDK;
       }
-      return { success: true, tagType };
+      return {
+        warning: warningCode,
+        warning_message: warningMessage,
+        success: true,
+        tagType,
+      };
     } catch (error) {
       return {
         success: false,
         error: VastURLValidator.ErrorCode.INVALID_URL,
         error_message: error.message,
+        warning: null,
+        warning_message: '',
         tagType: TAG_TYPE.UNKNOWN,
       };
     }
