@@ -106,4 +106,13 @@ describe('VastURLValidator', () => {
     expect(result.success).toBe(true);
     expect(result.tagType).toBe(TAG_TYPE.UNKNOWN);
   });
+
+  it('Should return an error for an invalid protocol', () => {
+    const invalidUrl =
+      'ftp://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples';
+    const validator = new VastURLValidator(invalidUrl);
+    const result = validator.validate();
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(VastURLValidator.ErrorCode.INVALID_URL);
+  });
 });
