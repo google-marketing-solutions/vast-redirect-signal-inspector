@@ -41,3 +41,44 @@ describe('vastAdTagParameters Validation', () => {
     });
   });
 });
+
+describe('vastAdTagParameters Alias Mapping', () => {
+  const parameterMap = {};
+
+  vastAdTagParameters.forEach((item) => {
+    parameterMap[item.name] = item;
+    if (item.aliases) {
+      item.aliases.forEach((alias) => {
+        parameterMap[alias] = item;
+      });
+    }
+  });
+
+  vastAdTagParameters.forEach((item) => {
+    if (item.aliases) {
+      it(`All aliases "${item.aliases} of "${item.name}" should map to the same object`, () => {
+        item.aliases.forEach((alias) => {
+          expect(parameterMap[alias]).toBe(parameterMap[item.name]);
+        });
+      });
+    }
+  });
+});
+
+describe('vastAdTagParameters - Unique Names and Aliases', () => {
+  it('Should have unique names and aliases across all parameters', () => {
+    const seen = new Set();
+
+    vastAdTagParameters.forEach((item) => {
+      expect(seen.has(item.name)).toBe(false);
+      seen.add(item.name);
+
+      if (item.aliases) {
+        item.aliases.forEach((alias) => {
+          expect(seen.has(alias)).toBe(false);
+          seen.add(alias);
+        });
+      }
+    });
+  });
+});

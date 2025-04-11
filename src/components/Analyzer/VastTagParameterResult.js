@@ -35,6 +35,8 @@ class VastTagParameterResult {
     this._exists = false;
     this._valid = false;
     this._override = false;
+    this._deprecated = '';
+    this._alias = '';
   }
 
   /**
@@ -105,6 +107,34 @@ class VastTagParameterResult {
    */
   set override(override) {
     this._override = override;
+  }
+
+  /**
+   * @return {string}
+   */
+  get deprecated() {
+    return this._deprecated;
+  }
+
+  /*
+   * @param {string} deprecated
+   */
+  set deprecated(deprecated) {
+    this._deprecated = deprecated;
+  }
+
+  /**
+   * @return {string}
+   */
+  get alias() {
+    return this._alias;
+  }
+
+  /**
+   * @param {string} alias
+   */
+  set alias(alias) {
+    this._alias = alias;
   }
 }
 

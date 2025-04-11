@@ -106,7 +106,7 @@ class VastURLAnalyzer {
       rules = JSON.parse(JSON.stringify(digitalOutOfHomeValidationRules));
     }
 
-    // Define Rules
+    // Define basic Rules
     const requiredParametersRules = rules.parameters.required;
     const programmaticRequiredParamsRules =
       rules.parameters.programmatic.required;
@@ -138,6 +138,13 @@ class VastURLAnalyzer {
     } else if (this.vastTagType == TAG_TYPE.PAL) {
       if (!requiredParametersRules.includes('givn')) {
         requiredParametersRules.push('givn');
+      }
+      palNonceParameters.forEach((palParam) =>
+        overrideParams.push(palParam.override),
+      );
+    } else if (this.vastTagType == TAG_TYPE.PAL_LEGACY) {
+      if (!requiredParametersRules.includes('paln')) {
+        requiredParametersRules.push('paln');
       }
       palNonceParameters.forEach((palParam) =>
         overrideParams.push(palParam.override),
@@ -260,22 +267,57 @@ class VastURLAnalyzer {
 
     // Validate required parameters
     requiredParams.forEach((parameterName) => {
+      // Get vast ad tag parameter reference.
       const vastAdTagParameter = vastAdTagParameters.find(
         (entry) => entry.name === parameterName,
       );
       const vastAdTagParameterValidation = vastAdTagParameter
         ? vastAdTagParameter.validation
         : null;
+      const vastAdTagParameterName = vastAdTagParameter
+        ? vastAdTagParameter.name
+        : parameterName;
       const isOverrideParam =
-        Array.isArray(overrideParams) && overrideParams.includes(parameterName);
-      const parameterResult = new VastTagParameterResult(
-        parameterName,
-        parameters[parameterName],
-      );
-      parameterResults.params[parameterName] = parameterResult;
+        Array.isArray(overrideParams) &&
+        overrideParams.includes(vastAdTagParameterName);
 
-      if (!(parameterName in parameters)) {
-        console.error('Missing parameter', parameterName);
+      // Check all parameters if we have a match and check alias if not.
+      let parameterValue = parameters[parameterName];
+      let aliasName = '';
+      if (!parameterValue && vastAdTagParameter && vastAdTagParameter.aliases) {
+        for (const alias of vastAdTagParameter.aliases) {
+          if (parameters[alias]) {
+            parameterValue = parameters[alias];
+            aliasName = alias;
+            console.info(
+              'Found alias',
+              aliasName,
+              'for parameter',
+              vastAdTagParameterName,
+              'with value',
+              parameterValue,
+            );
+            break;
+          }
+        }
+      }
+
+      // Define parameter result with alias support.
+      const parameterResult = new VastTagParameterResult(
+        vastAdTagParameterName,
+        parameterValue,
+      );
+      if (aliasName) {
+        parameterResult.alias = aliasName;
+      }
+      parameterResults.params[vastAdTagParameterName] = parameterResult;
+
+      // Perform validation based on the parameter type and rules.
+      if (
+        !(vastAdTagParameterName in parameters) &&
+        (!aliasName || !(aliasName in parameters))
+      ) {
+        console.error('Missing parameter', vastAdTagParameterName);
         parameterResult.score = optionalParameter
           ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
           : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
@@ -285,11 +327,11 @@ class VastURLAnalyzer {
       } else {
         if (vastAdTagParameterValidation) {
           const validation = new RegExp(vastAdTagParameterValidation);
-          if (!validation.test(parameters[parameterName])) {
+          if (!validation.test(parameterValue)) {
             console.warn(
               'Invalid parameter value',
-              parameterName,
-              parameters[parameterName],
+              vastAdTagParameterName,
+              parameterValue,
             );
             parameterResult.score = optionalParameter
               ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
@@ -300,9 +342,9 @@ class VastURLAnalyzer {
           } else {
             console.info(
               'Validated parameter',
-              parameterName,
+              vastAdTagParameterName,
               ':',
-              parameters[parameterName],
+              parameterValue,
             );
             parameterResult.score = optionalParameter
               ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_VALIDATED
@@ -312,7 +354,10 @@ class VastURLAnalyzer {
             parameterResults.valid++;
           }
         } else {
-          console.warn('Missing validation for parameter', parameterName);
+          console.warn(
+            'Missing validation for parameter',
+            vastAdTagParameterName,
+          );
           parameterResult.score = optionalParameter
             ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM
             : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM;

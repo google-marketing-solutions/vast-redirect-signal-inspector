@@ -20,7 +20,8 @@
  */
 
 import React from 'react';
-import { Grid2 as Grid, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
+import { Grid, Typography } from '@mui/material';
 import { CircularProgress } from '@mui/joy';
 
 /**
@@ -74,6 +75,9 @@ class VastURLScore extends React.Component {
   render() {
     const { data } = this.props;
     const analysisResult = data || {};
+    if (!analysisResult) {
+      return null;
+    }
     const requiredParametersScore = analysisResult
       ? Math.floor(
           (analysisResult.requiredParameters.valid /
@@ -180,5 +184,29 @@ class VastURLScore extends React.Component {
     );
   }
 }
+
+/**
+ * VastURLScore component.
+ * @type {Object}
+ */
+VastURLScore.propTypes = {
+  data: PropTypes.shape({
+    requiredParameters: PropTypes.shape({
+      valid: PropTypes.number.isRequired,
+      total: PropTypes.number.isRequired,
+      score: PropTypes.number.isRequired,
+    }).isRequired,
+    programmaticRequiredParameters: PropTypes.shape({
+      valid: PropTypes.number.isRequired,
+      total: PropTypes.number.isRequired,
+      score: PropTypes.number.isRequired,
+    }).isRequired,
+    programmaticRecommendedParameters: PropTypes.shape({
+      valid: PropTypes.number.isRequired,
+      total: PropTypes.number.isRequired,
+      score: PropTypes.number.isRequired,
+    }).isRequired,
+  }).isRequired,
+};
 
 export default VastURLScore;

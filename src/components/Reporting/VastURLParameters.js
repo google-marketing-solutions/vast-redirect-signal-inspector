@@ -77,6 +77,22 @@ class VastURLParameters extends React.PureComponent {
    * @param {string} name
    * @return {string}
    */
+  getVastAdTagParameterDeprecation = (name) => {
+    if (!vastAdTagParameters) {
+      return '';
+    }
+    for (const item of vastAdTagParameters) {
+      if (item.name === name) {
+        return item.deprecated;
+      }
+    }
+    return '';
+  };
+
+  /**
+   * @param {string} name
+   * @return {string}
+   */
   getVastAdTagParameterDescription = (name) => {
     if (!vastAdTagParameters) {
       return '';
@@ -140,9 +156,24 @@ class VastURLParameters extends React.PureComponent {
                   <StyledTableCell sx={{ width: '50px' }}>
                     {param.exists ? (
                       param.valid ? (
-                        <Tooltip title="Valid">
-                          <CheckCircleOutlineIcon style={{ color: 'green' }} />
-                        </Tooltip>
+                        this.getVastAdTagParameterDeprecation(param.name) ? (
+                          <Tooltip
+                            title={
+                              'Deprecated: ' +
+                              this.getVastAdTagParameterDeprecation(param.name)
+                            }
+                          >
+                            <CheckCircleOutlineIcon
+                              style={{ color: 'orange' }}
+                            />
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title="Valid">
+                            <CheckCircleOutlineIcon
+                              style={{ color: 'green' }}
+                            />
+                          </Tooltip>
+                        )
                       ) : (
                         <Tooltip title="Warning: Invalid">
                           <WarningAmberIcon style={{ color: 'orange' }} />
@@ -160,6 +191,19 @@ class VastURLParameters extends React.PureComponent {
                     >
                       {param.name}
                     </Tooltip>
+                    {param.alias && (
+                      <Tooltip title="Alias">
+                        <span
+                          style={{
+                            fontSize: '0.8rem',
+                            marginLeft: '5px',
+                            color: '#888',
+                          }}
+                        >
+                          ({param.alias})
+                        </span>
+                      </Tooltip>
+                    )}
                   </StyledTableCell>
                   <StyledTableCell>
                     {this.getVastAdTagParameterHelp(param.name) && (

@@ -39,6 +39,7 @@ export default defineConfig([
     '**/node_modules',
     '**/third_party',
     '**/*.min.js',
+    'lighthouserc.js',
   ]),
   {
     extends: compat.extends(
@@ -92,7 +93,6 @@ export default defineConfig([
           patterns: ['@mui/*/*/*'],
         },
       ],
-
       'no-unused-vars': [
         2,
         {
@@ -101,30 +101,25 @@ export default defineConfig([
           varsIgnorePattern: '_unused$',
         },
       ],
-
       'no-console': 0,
-
       camelcase: [
         0,
         {
           properties: 'never',
         },
       ],
-
       'new-cap': [
         2,
         {
           newIsCapExceptions: [],
         },
       ],
-
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
   },
   {
     files: ['**/*_test.js'],
-
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -136,7 +131,6 @@ export default defineConfig([
   },
   {
     files: ['**/*.conf.babel.js', 'build/**/*.babel.js'],
-
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -148,14 +142,12 @@ export default defineConfig([
   },
   {
     files: ['build/**/*.js'],
-
     rules: {
       '@typescript-eslint/camelcase': 'off',
     },
   },
   {
     files: ['**/*.ts', '**/*.tsx'],
-
     rules: {
       '@typescript-eslint/explicit-function-return-type': ['error'],
       '@typescript-eslint/explicit-module-boundary-types': ['error'],
