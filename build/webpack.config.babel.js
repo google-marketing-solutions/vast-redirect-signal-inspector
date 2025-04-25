@@ -62,7 +62,7 @@ module.exports = (mode = 'development') => ({
   output: {
     publicPath: mode == 'deploy' ? '/vast-redirect-signal-inspector/' : '/',
     path: path.join(__dirname, '..', 'dist'),
-    filename: (pathData) => {
+    filename: () => {
       return mode == 'development'
         ? 'js/[name].js'
         : 'js/[name].[contenthash].js';

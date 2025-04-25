@@ -54,6 +54,8 @@ import {
   IMPLEMENTATION_TYPE,
   EXAMPLE_VAST_URLS,
 } from '../../constants';
+import { decodeState } from '../../utils/encoder';
+import ShareButton from '../Button/ShareButton';
 import VastURLScore from '../Reporting/VastURLScore';
 
 /**
@@ -73,6 +75,7 @@ class App extends React.Component {
       implementationType: IMPLEMENTATION_TYPE.WEB,
       vastParameters: {},
       analysisResult: null,
+      showShareSnackbar: false,
       error: null,
       error_message: '',
       warning: null,
@@ -93,11 +96,34 @@ class App extends React.Component {
    */
   componentDidMount() {
     const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
     const redirectUrl = urlParams.get('redirect');
-    if (redirectUrl) {
+
+    if (encodedData) {
+      const decoded = decodeState(encodedData);
+      if (decoded && decoded.vastRedirectURL) {
+        console.log('Use decoded state', decoded);
+        this.setState(
+          {
+            ...decoded,
+          },
+          () => {
+            this.validateUrl(decoded.vastRedirectURL);
+            this.analysisResult();
+            const url = new URL(window.location.href);
+            url.searchParams.delete('data');
+            window.history.replaceState({}, document.title, url.pathname);
+          },
+        );
+      }
+    } else if (redirectUrl) {
+      console.log('Use redirect URL', redirectUrl);
       this.setState({ vastRedirectURL: redirectUrl }, () => {
         this.validateUrl(redirectUrl);
         this.analysisResult();
+        const url = new URL(window.location.href);
+        url.searchParams.delete('redirect');
+        window.history.replaceState({}, document.title, url.pathname);
       });
     }
   }
@@ -270,6 +296,7 @@ class App extends React.Component {
       warning_message,
       detectedVastTagType,
       implementationType,
+      showShareSnackbar,
       vastTagType,
       vastRedirectURL,
       analysisResult,
@@ -321,6 +348,23 @@ class App extends React.Component {
             </Alert>
           </Snackbar>
         )}
+        {showShareSnackbar && (
+          <Snackbar
+            open={true}
+            autoHideDuration={3000}
+            onClose={() => this.setState({ showShareSnackbar: false })}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <Alert
+              onClose={() => this.setState({ showShareSnackbar: false })}
+              severity="success"
+              sx={{ width: '100%' }}
+            >
+              Shareable URL copied to clipboard!
+            </Alert>
+          </Snackbar>
+        )}
+
         <AppBar component="nav">
           <Toolbar>
             <IconButton
@@ -511,6 +555,18 @@ class App extends React.Component {
 
             {analysisResult && Object.keys(analysisResult).length > 0 && (
               <VastURLScore data={analysisResult} />
+            )}
+
+            {analysisResult && Object.keys(analysisResult).length > 0 && (
+              <ShareButton
+                state={{
+                  vastRedirectURL,
+                  vastTagType,
+                  implementationType,
+                }}
+                onShare={() => this.setState({ showShareSnackbar: true })}
+                disabled={vastRedirectURL !== analysisResult.url}
+              />
             )}
 
             {analysisResult && Object.keys(analysisResult).length > 0 && (
