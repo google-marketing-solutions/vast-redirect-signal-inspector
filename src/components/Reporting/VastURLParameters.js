@@ -30,6 +30,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
@@ -323,5 +324,8 @@ class VastURLParameters extends React.PureComponent {
     );
   }
 }
+VastURLParameters.propTypes = {
+  data: PropTypes.object,
+};
 
 export default VastURLParameters;
