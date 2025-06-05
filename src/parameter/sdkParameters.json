@@ -47,7 +47,7 @@
   {
     "name": "idtype",
     "sdkHandlingInfo": "This parameter is automatically set by the SDK to indicate the type of 'rdid' being sent, ensuring correct interpretation of the device identifier.",
-    "sdk": ["IMA_SDK", "PAL_SDK", "PAI", "MOBILE_APP", "CONNECTED_TV"]
+    "sdk": ["IMA_SDK"]
   },
   {
     "name": "is_lat",
