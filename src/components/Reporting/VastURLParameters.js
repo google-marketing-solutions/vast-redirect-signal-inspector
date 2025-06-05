@@ -41,6 +41,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 import vastAdTagParameters from '../../parameter/vastAdTagParameters.json';
+import sdkParameters from '../../parameter/sdkParameters.json';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -120,6 +121,20 @@ class VastURLParameters extends React.PureComponent {
       }
     }
     return '';
+  };
+
+  /**
+   * Get specific SDK handling info for a parameter by name.
+   * @param {string} name The name of the parameter.
+   * @return {string} The SDK handling info message, or a default message if not found.
+   */
+  getSdkHandlingInfo = (name) => {
+    for (const param of sdkParameters) {
+      if (param.name === name && param.sdkHandlingInfo) {
+        return param.sdkHandlingInfo;
+      }
+    }
+    return 'This parameter is typically managed by an SDK.';
   };
 
   /**
@@ -278,7 +293,7 @@ class VastURLParameters extends React.PureComponent {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(230, 247, 255, 0.8)',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -287,6 +302,32 @@ class VastURLParameters extends React.PureComponent {
                       }}
                     >
                       Overridden by the PAL SDK Nonce !
+                    </div>
+                  )}
+
+                  {param.sdkManaged && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(230, 247, 255, 0.8)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1,
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        padding: '10px',
+                      }}
+                    >
+                      <Tooltip title={this.getSdkHandlingInfo(param.name)}>
+                        <span>SDK Managed Parameter</span>
+                      </Tooltip>
                     </div>
                   )}
                 </StyledTableRow>
