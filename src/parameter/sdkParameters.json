@@ -1,0 +1,72 @@
+[
+  {
+    "name": "correlator",
+    "sdkHandlingInfo": "The correlator is a cache-buster and is automatically generated and managed by the SDK to prevent caching of ad requests.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "output",
+    "sdkHandlingInfo": "The output format is typically determined by the SDK based on its internal requirements and the API version being used. Manual modification is generally not recommended.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "url",
+    "sdkHandlingInfo": "The SDK automatically detects and passes the current page URL. Manual overriding might lead to incorrect reporting.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "an",
+    "sdkHandlingInfo": "For mobile app environments, the application name is typically retrieved by the SDK directly from the app's manifest or package information. Manual inclusion is usually redundant.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "dth",
+    "sdkHandlingInfo": "The SDK attempts to detect the device type automatically. While sometimes included, it's often more accurately set by the SDK's internal logic.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "msid",
+    "sdkHandlingInfo": "The mobile session ID is managed by the SDK for tracking user sessions within an application. It's automatically generated and updated.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "omid_p",
+    "sdkHandlingInfo": "The Open Measurement Interface Definition (OMID) Partner ID is set by the SDK when OMID is enabled, indicating the integration partner. It is crucial for correct OM measurement.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "rdid",
+    "sdkHandlingInfo": "The SDK automatically retrieves and passes the appropriate resettable device identifier based on platform capabilities and user privacy settings. Direct manipulation is discouraged.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "wta",
+    "sdkHandlingInfo": "If integrated, the SDK can manage the inclusion of web traffic auditing parameters based on configured settings. Manual addition is less common.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "idtype",
+    "sdkHandlingInfo": "This parameter is automatically set by the SDK to indicate the type of 'rdid' being sent, ensuring correct interpretation of the device identifier.",
+    "sdk": ["IMA_SDK", "PAL_SDK", "PAI", "MOBILE_APP", "CONNECTED_TV"]
+  },
+  {
+    "name": "is_lat",
+    "sdkHandlingInfo": "The SDK automatically determines and passes the 'Limit Ad Tracking' (LAT) status based on the user's device privacy settings. Manual inclusion is typically not needed.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "pvid",
+    "sdkHandlingInfo": "The PVID is often managed by the SDK to provide a unique identifier for a given page view or content session, aiding in analytics and frequency capping.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "pvid_s",
+    "sdkHandlingInfo": "Similar to pvid, this parameter is internally managed by the SDK for reporting aggregated page view data.",
+    "sdk": ["IMA_SDK"]
+  },
+  {
+    "name": "sdk_apis",
+    "sdkHandlingInfo": "The SDK automatically populates this parameter with the APIs it supports (e.g., 'VAST', 'VPAID', 'OMID') based on its capabilities and configuration. Manual intervention is rarely required.",
+    "sdk": ["IMA_SDK"]
+  }
+]

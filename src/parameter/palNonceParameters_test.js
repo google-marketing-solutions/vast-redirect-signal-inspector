@@ -22,6 +22,10 @@
 import palNonceParameters from './palNonceParameters.json';
 
 describe('vastAdTagParameters Validation', () => {
+  it('Should be an array', () => {
+    expect(Array.isArray(palNonceParameters)).toBe(true);
+  });
+
   palNonceParameters.forEach((item) => {
     it(`Should validate ${item.name} example against the validation regex`, () => {
       const examples = item.examples;

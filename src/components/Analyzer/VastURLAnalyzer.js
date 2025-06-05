@@ -26,6 +26,7 @@ import connectTVValidationRules from '../../rules/connectedTVValidationRules.jso
 import digitalOutOfHomeValidationRules from '../../rules/digitalOutOfHomeValidationRules.json';
 import mobileValidationRules from '../../rules/mobileAppValidationRules.json';
 import palNonceParameters from '../../parameter/palNonceParameters.json';
+import sdkParameters from '../../parameter/sdkParameters.json';
 import vastAdTagParameters from '../../parameter/vastAdTagParameters.json';
 import webValidationRules from '../../rules/webValidationRules.json';
 
@@ -114,6 +115,12 @@ class VastURLAnalyzer {
       rules.parameters.programmatic.recommended;
     const overrideParams = [];
 
+    // Add SDK specific parameters, if applicable.
+    const sdkManagedParamNames =
+      this.vastTagType == TAG_TYPE.IMA_SDK
+        ? sdkParameters.map((param) => param.name)
+        : [];
+
     // Adding additional requirements based on the tag type
     if (this.vastTagType == TAG_TYPE.IMA_SDK) {
       if (programmaticRecommendedParamsRules.includes('dth')) {
@@ -170,6 +177,7 @@ class VastURLAnalyzer {
       this.vastParams,
       requiredParametersRules,
       overrideParams,
+      sdkManagedParamNames,
     );
     const programmaticRequiredParamsResult = this.validateRequiredParameters(
       this.vastParams,
@@ -177,6 +185,7 @@ class VastURLAnalyzer {
         (param) => !requiredParametersRules.includes(param),
       ),
       overrideParams,
+      sdkManagedParamNames,
     );
     const programmaticRecommendedParamsResult = this.validateOptionalParameters(
       this.vastParams,
@@ -186,6 +195,7 @@ class VastURLAnalyzer {
           !programmaticRequiredParamsRules.includes(param),
       ),
       overrideParams,
+      sdkManagedParamNames,
     );
     const otherParamsResult = this.validateOptionalParameters(
       this.vastParams,
@@ -196,6 +206,7 @@ class VastURLAnalyzer {
           !programmaticRecommendedParamsRules.includes(param),
       ),
       overrideParams,
+      sdkManagedParamNames,
     );
     const specialParamsResult = {};
 
@@ -215,14 +226,21 @@ class VastURLAnalyzer {
    * @param {*} parameters
    * @param {*} requiredParams
    * @param {Array} overrideParams
+   * @param {Array} sdkManagedParamNames
    * @return {Object}
    */
-  validateRequiredParameters(parameters, requiredParams, overrideParams = []) {
+  validateRequiredParameters(
+    parameters,
+    requiredParams,
+    overrideParams = [],
+    sdkManagedParamNames = [],
+  ) {
     return this.validateParameters(
       parameters,
       requiredParams,
       false,
       overrideParams,
+      sdkManagedParamNames,
     );
   }
 
@@ -230,14 +248,21 @@ class VastURLAnalyzer {
    * @param {*} parameters
    * @param {*} optionalParams
    * @param {Array} overrideParams
+   * @param {Array} sdkManagedParamNames
    * @return {Object}
    */
-  validateOptionalParameters(parameters, optionalParams, overrideParams = []) {
+  validateOptionalParameters(
+    parameters,
+    optionalParams,
+    overrideParams = [],
+    sdkManagedParamNames = [],
+  ) {
     return this.validateParameters(
       parameters,
       optionalParams,
       true,
       overrideParams,
+      sdkManagedParamNames,
     );
   }
 
@@ -246,6 +271,7 @@ class VastURLAnalyzer {
    * @param {*} requiredParams
    * @param {boolean} optionalParameter
    * @param {Array} overrideParams
+   * @param {Array} sdkManagedParamNames
    * @return {Object}
    */
   validateParameters(
@@ -253,6 +279,7 @@ class VastURLAnalyzer {
     requiredParams,
     optionalParameter = false,
     overrideParams = [],
+    sdkManagedParamNames = [],
   ) {
     // Results
     const parameterResults = {
@@ -261,6 +288,7 @@ class VastURLAnalyzer {
       missing: 0,
       invalid: 0,
       overridden: 0,
+      sdkManaged: 0,
       valid: 0,
       total: requiredParams.length,
     };
@@ -277,9 +305,14 @@ class VastURLAnalyzer {
       const vastAdTagParameterName = vastAdTagParameter
         ? vastAdTagParameter.name
         : parameterName;
+
+      // Check if the parameter is an override or SDK managed parameter.
       const isOverrideParam =
         Array.isArray(overrideParams) &&
         overrideParams.includes(vastAdTagParameterName);
+      const isSdkManagedParam =
+        Array.isArray(sdkManagedParamNames) &&
+        sdkManagedParamNames.includes(vastAdTagParameterName);
 
       // Check all parameters if we have a match and check alias if not.
       let parameterValue = parameters[parameterName];
@@ -367,12 +400,21 @@ class VastURLAnalyzer {
         }
       }
 
-      // Calculate Score
+      // Adjust score for overridden parameters.
       if (isOverrideParam) {
         parameterResult.override = true;
         parameterResult.score = 2.5;
         parameterResults.overridden++;
       }
+
+      // Adjust score for SDK managed parameters.
+      if (isSdkManagedParam) {
+        parameterResult.sdkManaged = true;
+        parameterResult.score = 2.5;
+        parameterResults.sdkManaged++;
+      }
+
+      // Calculate Score
       parameterResults.score += parameterResult.score;
     });
     return parameterResults;

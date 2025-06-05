@@ -35,6 +35,7 @@ class VastTagParameterResult {
     this._exists = false;
     this._valid = false;
     this._override = false;
+    this._sdkManaged = false;
     this._deprecated = '';
     this._alias = '';
   }
@@ -107,6 +108,20 @@ class VastTagParameterResult {
    */
   set override(override) {
     this._override = override;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  get sdkManaged() {
+    return this._sdkManaged;
+  }
+
+  /**
+   * @param {boolean} sdkManaged
+   */
+  set sdkManaged(sdkManaged) {
+    this._sdkManaged = sdkManaged;
   }
 
   /**
