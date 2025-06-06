@@ -36,6 +36,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+
 import VastURLValidator from '../Validator/VastURLValidator';
 import VastURLParser from '../Parser/VastURLParser';
 import VastURLAnalyzer from '../Analyzer/VastURLAnalyzer';
@@ -45,6 +46,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import CodeIcon from '@mui/icons-material/Code';
+import TourIcon from '@mui/icons-material/Tour';
 import HelpIcon from '@mui/icons-material/Help';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -57,6 +59,11 @@ import {
 import { decodeState } from '../../utils/encoder';
 import ShareButton from '../Button/ShareButton';
 import VastURLScore from '../Reporting/VastURLScore';
+
+// Lazy load less frequently used components
+const Joyride = React.lazy(() => import('react-joyride'));
+
+const TOUR_KEY = 'vast-inspector-tour-seen';
 
 /**
  * @class
@@ -80,6 +87,9 @@ class App extends React.Component {
       error_message: '',
       warning: null,
       warning_message: '',
+      runTour: false,
+      tourSteps: [],
+      showJoyride: false,
     };
     this.handleAnalyzeClick = this.handleAnalyzeClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -89,6 +99,8 @@ class App extends React.Component {
       this.handleImplementationTypeChange.bind(this);
     this.handleToolbarClick = this.handleToolbarClick.bind(this);
     this.handleExampleClick = this.handleExampleClick.bind(this);
+    this.handleTourCallback = this.handleTourCallback.bind(this);
+    this.handleStartTour = this.handleStartTour.bind(this);
   }
 
   /**
@@ -96,9 +108,10 @@ class App extends React.Component {
    */
   componentDidMount() {
     const urlParams = new URLSearchParams(window.location.search);
+
+    // Check for encoded data or redirect URL in the URL parameters
     const encodedData = urlParams.get('data');
     const redirectUrl = urlParams.get('redirect');
-
     if (encodedData) {
       const decoded = decodeState(encodedData);
       if (decoded && decoded.vastRedirectURL) {
@@ -126,16 +139,11 @@ class App extends React.Component {
         window.history.replaceState({}, document.title, url.pathname);
       });
     }
-  }
 
-  /**
-   * @param {*} event
-   */
-  handleChange(event) {
-    const newUrl = event.target.value;
-    this.setState({ vastRedirectURL: newUrl }, () => {
-      this.validateUrl(newUrl);
-    });
+    // Joyride Setup
+    if (!localStorage.getItem(TOUR_KEY)) {
+      this.handleStartTour();
+    }
   }
 
   /**
@@ -161,6 +169,16 @@ class App extends React.Component {
         vastTagType: validationResult.tagType,
       });
     }
+  }
+
+  /**
+   * @param {*} event
+   */
+  handleChange(event) {
+    const newUrl = event.target.value;
+    this.setState({ vastRedirectURL: newUrl }, () => {
+      this.validateUrl(newUrl);
+    });
   }
 
   /**
@@ -206,7 +224,7 @@ class App extends React.Component {
   async analysisResult() {
     const { vastRedirectURL } = this.state;
 
-    // Parse URL
+    // Parse URL and extract parameters
     const parser = new VastURLParser(vastRedirectURL);
     const parseResult = parser.parse();
     if (!parseResult.success) {
@@ -226,7 +244,7 @@ class App extends React.Component {
       this.setState({ vastParameters: parseResult.params }, resolve);
     });
 
-    // Analyze URL
+    // Analyze Vast URL based on the parsed parameters
     const analyzer = new VastURLAnalyzer(
       vastRedirectURL,
       parseResult.params,
@@ -243,6 +261,8 @@ class App extends React.Component {
       });
       return;
     }
+
+    // Update state with the analysis result
     await new Promise((resolve) => {
       this.setState({ analysisResult: analyzerResult.analysisResult }, resolve);
     });
@@ -268,11 +288,20 @@ class App extends React.Component {
           'https://github.com/google-marketing-solutions/vast-redirect-signal-inspector/issues',
         );
         break;
+      case 'Tour':
+        this.handleStartTour();
+        break;
+      case 'Help':
+        window.open('https://support.google.com/admanager/answer/10678356');
+        break;
       default:
         break;
     }
   }
 
+  /**
+   * @param {*} event
+   */
   handleExampleClick(event) {
     event.preventDefault();
     const { vastTagType } = this.state;
@@ -282,6 +311,43 @@ class App extends React.Component {
         this.validateUrl(exampleUrl);
         this.analysisResult();
       });
+    }
+  }
+
+  /**
+   * @param {Object} data - The Joyride event data.
+   */
+  handleTourCallback(data) {
+    if (data.status === 'finished' || data.status === 'skipped') {
+      localStorage.setItem(TOUR_KEY, '1');
+      this.setState({ runTour: false });
+    } else if (data.index === 0 && !this.state.vastRedirectURL) {
+      const exampleUrl = EXAMPLE_VAST_URLS[TAG_TYPE.STANDARD];
+      this.setState({ vastRedirectURL: exampleUrl }, () => {
+        this.validateUrl(exampleUrl);
+        this.setState({ runTour: false }, () => {
+          setTimeout(() => this.setState({ runTour: true }), 100);
+        });
+      });
+    } else if (data.index === 4) {
+      this.analysisResult();
+    }
+  }
+
+  /**
+   * Start the tour, if not already started.
+   */
+  handleStartTour() {
+    if (!this.state.tourSteps.length) {
+      import('../tour/TourSteps').then((module) => {
+        this.setState({
+          tourSteps: module.default,
+          runTour: true,
+          showJoyride: true,
+        });
+      });
+    } else {
+      this.setState({ runTour: true, showJoyride: true });
     }
   }
 
@@ -312,12 +378,37 @@ class App extends React.Component {
       { name: 'Home', icon: <HomeIcon /> },
       { name: 'Source', icon: <CodeIcon /> },
       { name: 'Issues', icon: <BugReportIcon /> },
+      { name: 'Tour', icon: <TourIcon /> },
       { name: 'Help', icon: <HelpIcon /> },
       { name: 'About', icon: <InfoIcon /> },
     ];
 
     return (
       <Box sx={{ display: 'flex' }}>
+        <React.Suspense fallback={null}>
+          {this.state.showJoyride && (
+            <Joyride
+              run={this.state.runTour}
+              steps={this.state.tourSteps}
+              continuous
+              showSkipButton
+              showProgress
+              disableOverlayClose={true}
+              callback={this.handleTourCallback}
+              styles={{
+                options: { maxWidth: 800, zIndex: 10000 },
+                tooltip: {
+                  minWidth: 480,
+                  maxWidth: 800,
+                  fontSize: 16,
+                  padding: '12px',
+                },
+              }}
+              scrollOffset={128}
+            />
+          )}
+        </React.Suspense>
+
         {error && (
           <Snackbar
             open={open}
@@ -445,6 +536,7 @@ class App extends React.Component {
               }}
             >
               <TextField
+                className="vast-redirect-url-input"
                 label="Vast Redirect URL"
                 value={vastRedirectURL}
                 variant="outlined"
@@ -453,6 +545,7 @@ class App extends React.Component {
                 onChange={this.handleChange}
               />
               <Button
+                className="analyze-button"
                 variant="contained"
                 color="primary"
                 size="large"
@@ -492,6 +585,7 @@ class App extends React.Component {
                   )}
                   <RadioGroup
                     aria-label="vast-tag-type"
+                    className="vast-tag-type-radio-group"
                     name="vastTagType"
                     value={vastTagType}
                     onChange={this.handleTagTypeChange}
@@ -535,6 +629,7 @@ class App extends React.Component {
               <Typography variant="body1">Implementation Type:</Typography>
               <RadioGroup
                 aria-label="implementation-type"
+                className="implementation-type-radio-group"
                 name="implementationType"
                 value={implementationType}
                 onChange={this.handleImplementationTypeChange}
@@ -553,9 +648,13 @@ class App extends React.Component {
               </RadioGroup>
             </FormControl>
 
-            {analysisResult && Object.keys(analysisResult).length > 0 && (
-              <VastURLScore data={analysisResult} />
-            )}
+            <Box className="vast-url-score-result">
+              <Box minHeight={180}>
+                {analysisResult && Object.keys(analysisResult).length > 0 && (
+                  <VastURLScore data={analysisResult} />
+                )}
+              </Box>
+            </Box>
 
             {analysisResult && Object.keys(analysisResult).length > 0 && (
               <ShareButton
