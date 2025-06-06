@@ -41,7 +41,7 @@
   },
   {
     "name": "wta",
-    "sdkHandlingInfo": "If integrated, the SDK can manage the inclusion of web traffic auditing parameters based on configured settings. Manual addition is less common.",
+    "sdkHandlingInfo": "The 'wta' (Why this Ad) parameter is automatically managed by the SDK to provide users with information about why a specific ad was shown, based on the ad's targeting criteria. Direct manipulation is discouraged.",
     "sdk": ["IMA_SDK"]
   },
   {
