@@ -128,7 +128,6 @@ class VastURLScore extends React.Component {
           </CircularProgress>
           <Typography variant="h5">Total Score</Typography>
         </Grid>
-
         <Grid size={3}>
           <CircularProgress
             sx={{
@@ -145,7 +144,6 @@ class VastURLScore extends React.Component {
           </CircularProgress>
           <Typography variant="h5">Required</Typography>
         </Grid>
-
         <Grid size={3}>
           <CircularProgress
             sx={{
@@ -164,7 +162,6 @@ class VastURLScore extends React.Component {
           </CircularProgress>
           <Typography variant="h5">Programmatic</Typography>
         </Grid>
-
         <Grid size={3}>
           <CircularProgress
             sx={{

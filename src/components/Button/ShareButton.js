@@ -55,6 +55,7 @@ class ShareButton extends React.Component {
           variant="outlined"
           color="primary"
           startIcon={<ShareIcon />}
+          className="share-button"
           onClick={this.handleShareClick}
           sx={{ margin: 5 }}
           disabled={this.props.disabled}

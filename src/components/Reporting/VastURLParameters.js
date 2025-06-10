@@ -146,7 +146,10 @@ class VastURLParameters extends React.PureComponent {
     if (!params) return null;
 
     return (
-      <div style={{ marginBottom: '20px' }}>
+      <div
+        style={{ marginBottom: '20px' }}
+        className={`vast-url-parameters vast-url-parameters-${title.toLowerCase().replace(/\s/g, '-')}`}
+      >
         <Typography variant="h6" gutterBottom>
           {title}
         </Typography>
@@ -205,7 +208,7 @@ class VastURLParameters extends React.PureComponent {
                     <Tooltip
                       title={this.getVastAdTagParameterDescription(param.name)}
                     >
-                      {param.name}
+                      <span>{param.name}</span>
                     </Tooltip>
                     {param.alias && (
                       <Tooltip title="Alias">
