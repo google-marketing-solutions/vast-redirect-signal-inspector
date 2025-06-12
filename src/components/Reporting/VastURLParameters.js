@@ -43,6 +43,8 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import vastAdTagParameters from '../../parameter/vastAdTagParameters.json';
 import sdkParameters from '../../parameter/sdkParameters.json';
 
+import * as styles from './style.module.css';
+
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   boxShadow: theme.shadows[3],
@@ -167,7 +169,7 @@ class VastURLParameters extends React.PureComponent {
               </TableRow>
             </StyledTableHead>
             <TableBody>
-              {Object.values(params.params).map((param) => (
+              {Object.values(params).map((param) => (
                 <StyledTableRow
                   key={param.name}
                   style={{ position: 'relative' }}
@@ -288,51 +290,23 @@ class VastURLParameters extends React.PureComponent {
                     )}
                   </StyledTableCell>
                   <StyledTableCell>{param.score}</StyledTableCell>
-                  {param.override && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(230, 247, 255, 0.8)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1,
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      Overridden by the PAL SDK Nonce !
-                    </div>
-                  )}
-
-                  {param.sdkManaged && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        backgroundColor: 'rgba(230, 247, 255, 0.8)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1,
-                        fontSize: '0.8rem',
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        padding: '10px',
-                      }}
-                    >
+                  <StyledTableCell
+                    className={styles.vastUrlParametersOverlay}
+                    colSpan={5}
+                  >
+                    {param.override && (
+                      <div className={styles.vastUrlParametersOverrideOverlay}>
+                        Overridden by the PAL SDK Nonce !
+                      </div>
+                    )}
+                    {param.sdkManaged && (
                       <Tooltip title={this.getSdkHandlingInfo(param.name)}>
-                        <span>SDK Managed Parameter</span>
+                        <div className={styles.vastUrlParametersSdkOverlay}>
+                          SDK Managed Parameter
+                        </div>
                       </Tooltip>
-                    </div>
-                  )}
+                    )}
+                  </StyledTableCell>
                 </StyledTableRow>
               ))}
             </TableBody>

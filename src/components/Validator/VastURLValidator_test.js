@@ -91,6 +91,13 @@ describe('VastURLValidator', () => {
     expect(result.tagType).toBe(TAG_TYPE.PAI);
   });
 
+  it('Should correctly identify a PAI + PAL VAST URL (serverside.)', () => {
+    const validator = new VastURLValidator(EXAMPLE_VAST_URLS[TAG_TYPE.PAI_PAL]);
+    const result = validator.validate();
+    expect(result.success).toBe(true);
+    expect(result.tagType).toBe(TAG_TYPE.PAI_PAL);
+  });
+
   it('Should correctly identify an IMA SDK VAST URL (pagead2.)', () => {
     const validator = new VastURLValidator(EXAMPLE_VAST_URLS[TAG_TYPE.IMA_SDK]);
     const result = validator.validate();

@@ -130,8 +130,8 @@
   {
     "name": "rdid",
     "description": "A resettable device identifier that can be updated by the user at any time.",
-    "examples": ["123e4567-e89b-12d3-a456-426614174000"],
-    "validation": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    "examples": ["123e4567-e89b-12d3-a456-426614174000", "123E4567-E89B-12D3-A456-426614174000"],
+    "validation": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
     "help": "https://support.google.com/admanager/answer/6238701?hl=en"
   },
   {

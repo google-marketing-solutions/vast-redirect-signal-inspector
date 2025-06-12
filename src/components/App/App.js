@@ -42,13 +42,15 @@ import VastURLParser from '../Parser/VastURLParser';
 import VastURLAnalyzer from '../Analyzer/VastURLAnalyzer';
 import VastURLParameters from '../Reporting/VastURLParameters';
 
-import MenuIcon from '@mui/icons-material/Menu';
+import BugReportIcon from '@mui/icons-material/BugReport';
+import CodeIcon from '@mui/icons-material/Code';
+import HelpIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
-import CodeIcon from '@mui/icons-material/Code';
+import InsightsIcon from '@mui/icons-material/Insights';
+import MenuIcon from '@mui/icons-material/Menu';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import TourIcon from '@mui/icons-material/Tour';
-import HelpIcon from '@mui/icons-material/Help';
-import BugReportIcon from '@mui/icons-material/BugReport';
 import WarningIcon from '@mui/icons-material/Warning';
 
 import {
@@ -77,7 +79,7 @@ class App extends React.Component {
     super(props);
     this.state = {
       vastRedirectURL: '',
-      vastTagType: TAG_TYPE.UNKNOWN,
+      vastTagType: TAG_TYPE.STANDARD,
       detectedVastTagType: TAG_TYPE.UNKNOWN,
       implementationType: IMPLEMENTATION_TYPE.WEB,
       vastParameters: {},
@@ -485,7 +487,7 @@ class App extends React.Component {
                   margin: '0 10px 5px 0',
                 }}
               />
-              VAST Signal Inspector
+              VAST Signal Inspector v{VERSION}
               <span
                 style={{
                   backgroundColor: '#e0e0e0',
@@ -549,6 +551,7 @@ class App extends React.Component {
                 variant="contained"
                 color="primary"
                 size="large"
+                startIcon={<InsightsIcon />}
                 onClick={this.handleAnalyzeClick}
                 disabled={
                   !vastRedirectURL ||
@@ -591,19 +594,26 @@ class App extends React.Component {
                     onChange={this.handleTagTypeChange}
                     row
                   >
-                    {Object.values(TAG_TYPE).map((type) => (
-                      <FormControlLabel
-                        key={type}
-                        value={type}
-                        control={<Radio />}
-                        label={type
-                          .replace(/_/g, ' ')
-                          .replace(/\b\w/g, (l) => l.toUpperCase())}
-                      />
-                    ))}
+                    {Object.values(TAG_TYPE)
+                      .filter(
+                        (type) =>
+                          type !== TAG_TYPE.UNKNOWN ||
+                          vastTagType === TAG_TYPE.UNKNOWN,
+                      )
+                      .map((type) => (
+                        <FormControlLabel
+                          key={type}
+                          value={type}
+                          control={<Radio />}
+                          label={type
+                            .replace(/_/g, ' ')
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        />
+                      ))}
                   </RadioGroup>
                   <Button
                     variant="outlined"
+                    startIcon={<PlayCircleOutlineIcon />}
                     onClick={this.handleExampleClick}
                     sx={{ ml: 2 }}
                     disabled={

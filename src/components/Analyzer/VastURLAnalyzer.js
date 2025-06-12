@@ -121,7 +121,7 @@ class VastURLAnalyzer {
         ? sdkParameters.map((param) => param.name)
         : [];
 
-    // Adding additional requirements based on the tag type
+    // Add IMA SDK specific parameters and remove some parameters
     if (this.vastTagType == TAG_TYPE.IMA_SDK) {
       if (programmaticRecommendedParamsRules.includes('dth')) {
         programmaticRecommendedParamsRules.splice(
@@ -135,14 +135,26 @@ class VastURLAnalyzer {
           1,
         );
       }
-    } else if (this.vastTagType == TAG_TYPE.PAI) {
+    }
+
+    // Add PAI specific parameters
+    if (
+      this.vastTagType == TAG_TYPE.PAI ||
+      this.vastTagType == TAG_TYPE.PAI_PAL
+    ) {
       if (!requiredParametersRules.includes('ssss')) {
         requiredParametersRules.push('ssss');
       }
       if (!requiredParametersRules.includes('ip')) {
         requiredParametersRules.push('ip');
       }
-    } else if (this.vastTagType == TAG_TYPE.PAL) {
+    }
+
+    // Add PAL specific parameters
+    if (
+      this.vastTagType == TAG_TYPE.PAL ||
+      this.vastTagType == TAG_TYPE.PAI_PAL
+    ) {
       if (!requiredParametersRules.includes('givn')) {
         requiredParametersRules.push('givn');
       }
@@ -282,16 +294,7 @@ class VastURLAnalyzer {
     sdkManagedParamNames = [],
   ) {
     // Results
-    const parameterResults = {
-      params: {},
-      score: 0,
-      missing: 0,
-      invalid: 0,
-      overridden: 0,
-      sdkManaged: 0,
-      valid: 0,
-      total: requiredParams.length,
-    };
+    const parameterResults = {};
 
     // Validate required parameters
     requiredParams.forEach((parameterName) => {
@@ -343,7 +346,7 @@ class VastURLAnalyzer {
       if (aliasName) {
         parameterResult.alias = aliasName;
       }
-      parameterResults.params[vastAdTagParameterName] = parameterResult;
+      parameterResults[vastAdTagParameterName] = parameterResult;
 
       // Perform validation based on the parameter type and rules.
       if (
@@ -356,67 +359,60 @@ class VastURLAnalyzer {
           : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
         parameterResult.exists = false;
         parameterResult.valid = false;
-        parameterResults.missing++;
-      } else {
-        if (vastAdTagParameterValidation) {
-          const validation = new RegExp(vastAdTagParameterValidation);
-          if (!validation.test(parameterValue)) {
-            console.warn(
-              'Invalid parameter value',
-              vastAdTagParameterName,
-              parameterValue,
-            );
-            parameterResult.score = optionalParameter
-              ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
-              : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
-            parameterResult.exists = true;
-            parameterResult.valid = false;
-            parameterResults.invalid++;
-          } else {
-            console.info(
-              'Validated parameter',
-              vastAdTagParameterName,
-              ':',
-              parameterValue,
-            );
-            parameterResult.score = optionalParameter
-              ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_VALIDATED
-              : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_VALIDATED;
-            parameterResult.exists = true;
-            parameterResult.valid = true;
-            parameterResults.valid++;
-          }
-        } else {
+      } else if (vastAdTagParameterValidation) {
+        const validation = new RegExp(vastAdTagParameterValidation);
+        if (!validation.test(parameterValue)) {
           console.warn(
-            'Missing validation for parameter',
+            'Invalid parameter value',
             vastAdTagParameterName,
+            parameterValue,
           );
           parameterResult.score = optionalParameter
-            ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM
-            : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM;
+            ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
+            : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+          parameterResult.exists = true;
+          parameterResult.valid = false;
+        } else {
+          console.info(
+            'Validated parameter',
+            vastAdTagParameterName,
+            ':',
+            parameterValue,
+          );
+          parameterResult.score = optionalParameter
+            ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_VALIDATED
+            : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_VALIDATED;
           parameterResult.exists = true;
           parameterResult.valid = true;
-          parameterResults.valid++;
         }
+      } else {
+        console.warn(
+          'Missing validation for parameter',
+          vastAdTagParameterName,
+        );
+        parameterResult.score = optionalParameter
+          ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM
+          : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM;
+        parameterResult.exists = true;
+        parameterResult.valid = true;
       }
 
       // Adjust score for overridden parameters.
       if (isOverrideParam) {
         parameterResult.override = true;
         parameterResult.score = 2.5;
-        parameterResults.overridden++;
+        if (!parameterResult.valid) {
+          parameterResult.valid = true;
+        }
       }
 
       // Adjust score for SDK managed parameters.
       if (isSdkManagedParam) {
         parameterResult.sdkManaged = true;
         parameterResult.score = 2.5;
-        parameterResults.sdkManaged++;
       }
-
-      // Calculate Score
-      parameterResults.score += parameterResult.score;
     });
+
     return parameterResults;
   }
 }

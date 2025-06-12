@@ -97,7 +97,24 @@ describe('VastURLParser', () => {
     expect(result.params.env).toBe('vp');
     expect(result.params.impl).toBe('s');
     expect(result.params.ssss).toBe('vast_url_validator_test');
-    expect(result.params.ip).toBe('1.2.3.4');
+    expect(result.params.ip).toBe('203.0.113.1');
+  });
+
+  it('Should correctly parse a PAI + PAL VAST URL', () => {
+    const parser = new VastURLParser(EXAMPLE_VAST_URLS[TAG_TYPE.PAI_PAL]);
+    const result = parser.parse();
+    expect(result.success).toBe(true);
+    expect(result.params.cust_params).toEqual({ sample_ct: 'linear' });
+    expect(result.params.ciu_szs).toBe('300x250,728x90');
+    expect(result.params.gdfp_req).toBe('1');
+    expect(result.params.output).toBe('vast');
+    expect(result.params.unviewed_position_start).toBe('1');
+    expect(result.params.env).toBe('vp');
+    expect(result.params.impl).toBe('s');
+    expect(result.params.ssss).toBe('vast_url_validator_test');
+    expect(result.params.ip).toBe('203.0.113.1');
+    expect(result.params.givn.startsWith('AQzzBGQ'));
+    expect(result.params.givn.endsWith('FFTw..'));
   });
 
   it('Should correctly parse an IMA SDK VAST URL', () => {
