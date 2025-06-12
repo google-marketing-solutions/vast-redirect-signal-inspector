@@ -397,19 +397,14 @@ class VastURLAnalyzer {
         parameterResult.valid = true;
       }
 
-      // Adjust score for overridden parameters.
-      if (isOverrideParam) {
-        parameterResult.override = true;
+      // Adjust score for overridden and SDK managed parameters.
+      if (isOverrideParam || isSdkManagedParam) {
+        parameterResult.override = isOverrideParam;
+        parameterResult.sdkManaged = isSdkManagedParam;
         parameterResult.score = 2.5;
         if (!parameterResult.valid) {
           parameterResult.valid = true;
         }
-      }
-
-      // Adjust score for SDK managed parameters.
-      if (isSdkManagedParam) {
-        parameterResult.sdkManaged = true;
-        parameterResult.score = 2.5;
       }
     });
 
