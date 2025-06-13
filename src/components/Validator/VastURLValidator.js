@@ -85,6 +85,15 @@ class VastURLValidator {
       // Check for valid VAST tags.
       let tagType = TAG_TYPE.UNKNOWN;
       if (
+        hostname === 'serverside.doubleclick.net' &&
+        searchParams.has('ssss')
+      ) {
+        if (searchParams.has('givn')) {
+          tagType = TAG_TYPE.PAI_PAL;
+        } else {
+          tagType = TAG_TYPE.PAI;
+        }
+      } else if (
         hostname === 'pubads.g.doubleclick.net' ||
         hostname === 'securepubads.g.doubleclick.net' ||
         (hostname.endsWith('.corp.google.com') &&
@@ -99,11 +108,6 @@ class VastURLValidator {
         } else {
           tagType = TAG_TYPE.STANDARD;
         }
-      } else if (
-        hostname === 'serverside.doubleclick.net' &&
-        searchParams.has('ssss')
-      ) {
-        tagType = TAG_TYPE.PAI;
       } else if (
         hostname === 'pagead2.googlesyndication.com' &&
         searchParams.has('sdkv')
