@@ -44,12 +44,14 @@
     "aliases": ["slotname"],
     "description": "The ad unit code that identifies the ad slot.",
     "examples": [
+      "/1234567,7654321/ad_unit/sub_ad_unit.en/sport/f-1",
       "/1234567/sports",
+      "/network_code,child_network/ad_unit/sub_ad_unit/sport/f-1",
       "/network_code/ad_unit/sub_ad_unit",
       "/network_code/ad_unit/sub_ad_unit.de",
       "/network_code/ad_unit/sub_ad_unit.en/sport/f-1"
     ],
-    "validation": "^(/[a-zA-Z0-9_.-]+)+$",
+    "validation": "^/[a-zA-Z0-9_.,-]+(/[a-zA-Z0-9_.-]+)*$",
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#iu&zippy=%2Ciu-ad-unit"
   },
   {
@@ -130,7 +132,10 @@
   {
     "name": "rdid",
     "description": "A resettable device identifier that can be updated by the user at any time.",
-    "examples": ["123e4567-e89b-12d3-a456-426614174000", "123E4567-E89B-12D3-A456-426614174000"],
+    "examples": [
+      "123e4567-e89b-12d3-a456-426614174000",
+      "123E4567-E89B-12D3-A456-426614174000"
+    ],
     "validation": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
     "help": "https://support.google.com/admanager/answer/6238701?hl=en"
   },
