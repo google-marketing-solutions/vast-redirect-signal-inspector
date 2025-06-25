@@ -142,9 +142,10 @@ class VastURLParameters extends React.PureComponent {
   /**
    * @param {*} params
    * @param {string} title
+   * @param {boolean} showDebug
    * @return {React.ReactNode}
    */
-  renderTable = (params, title) => {
+  renderTable = (params, title, showDebug = false) => {
     if (!params) return null;
 
     return (
@@ -165,7 +166,11 @@ class VastURLParameters extends React.PureComponent {
                 </StyledTableCell>
                 <StyledTableCell sx={{ width: '15px' }}></StyledTableCell>
                 <StyledTableCell>Value</StyledTableCell>
-                <StyledTableCell sx={{ width: '50px' }}>Score</StyledTableCell>
+                {showDebug && (
+                  <StyledTableCell sx={{ width: '50px' }}>
+                    Score
+                  </StyledTableCell>
+                )}
               </TableRow>
             </StyledTableHead>
             <TableBody>
@@ -289,10 +294,12 @@ class VastURLParameters extends React.PureComponent {
                       </Typography>
                     )}
                   </StyledTableCell>
-                  <StyledTableCell>{param.score}</StyledTableCell>
+                  {showDebug && (
+                    <StyledTableCell>{param.score}</StyledTableCell>
+                  )}
                   <StyledTableCell
                     className={styles.vastUrlParametersOverlay}
-                    colSpan={5}
+                    colSpan={showDebug ? 5 : 4}
                   >
                     {param.override && (
                       <div className={styles.vastUrlParametersOverrideOverlay}>
@@ -321,29 +328,37 @@ class VastURLParameters extends React.PureComponent {
    * @override
    */
   render() {
-    const { data } = this.props;
+    const { data, showDebug } = this.props;
     const analysisResult = data || {};
     return (
       <div>
         {this.renderTable(
           analysisResult.requiredParameters,
           'Required Parameters',
+          showDebug,
         )}
         {this.renderTable(
           analysisResult.programmaticRequiredParameters,
           'Required Programmatic Parameters',
+          showDebug,
         )}
         {this.renderTable(
           analysisResult.programmaticRecommendedParameters,
           'Recommended Programmatic Parameters',
+          showDebug,
         )}
-        {this.renderTable(analysisResult.otherParameters, 'Other Parameters')}
+        {this.renderTable(
+          analysisResult.otherParameters,
+          'Other Parameters',
+          showDebug,
+        )}
       </div>
     );
   }
 }
 VastURLParameters.propTypes = {
   data: PropTypes.object,
+  showDebug: PropTypes.bool,
 };
 
 export default VastURLParameters;

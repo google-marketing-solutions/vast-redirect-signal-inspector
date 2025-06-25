@@ -85,6 +85,7 @@ class App extends React.Component {
       vastParameters: {},
       analysisResult: null,
       showShareSnackbar: false,
+      showDebug: false,
       error: null,
       error_message: '',
       warning: null,
@@ -110,6 +111,12 @@ class App extends React.Component {
    */
   componentDidMount() {
     const urlParams = new URLSearchParams(window.location.search);
+
+    // Check for debug mode in the URL parameters
+    if (urlParams.get('debug') === '1') {
+      this.setState({ showDebug: true });
+      console.log('Debug mode enabled');
+    }
 
     // Check for encoded data or redirect URL in the URL parameters
     const encodedData = urlParams.get('data');
@@ -364,6 +371,7 @@ class App extends React.Component {
       warning_message,
       detectedVastTagType,
       implementationType,
+      showDebug,
       showShareSnackbar,
       vastTagType,
       vastRedirectURL,
@@ -679,7 +687,7 @@ class App extends React.Component {
             )}
 
             {analysisResult && Object.keys(analysisResult).length > 0 && (
-              <VastURLParameters data={analysisResult} />
+              <VastURLParameters data={analysisResult} showDebug={showDebug} />
             )}
           </Container>
         </Box>
