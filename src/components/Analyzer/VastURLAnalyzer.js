@@ -44,9 +44,13 @@ class VastURLAnalyzer {
   static DefaultScore = {
     OPTIONAL_PARAM: 0.5,
     OPTIONAL_PARAM_MISSING: 0,
+    OPTIONAL_PARAM_INVALID: 0,
+    OPTIONAL_PARAM_VALID: 0.5,
     OPTIONAL_PARAM_VALIDATED: 1,
     REQUIRED_PARAM: 4,
     REQUIRED_PARAM_MISSING: -5,
+    REQUIRED_PARAM_INVALID: -3,
+    REQUIRED_PARAM_VALID: 3,
     REQUIRED_PARAM_VALIDATED: 5,
   };
 
@@ -362,16 +366,53 @@ class VastURLAnalyzer {
       } else if (vastAdTagParameterValidation) {
         const validation = new RegExp(vastAdTagParameterValidation);
         if (!validation.test(parameterValue)) {
-          console.warn(
-            'Invalid parameter value',
-            vastAdTagParameterName,
-            parameterValue,
-          );
-          parameterResult.score = optionalParameter
-            ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
-            : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
-          parameterResult.exists = true;
-          parameterResult.valid = false;
+          // Check if the parameter value matches the accepted (but not recommended) values
+          if (
+            vastAdTagParameter &&
+            vastAdTagParameter.accepted &&
+            vastAdTagParameter.accepted.validation
+          ) {
+            const acceptedValidation = new RegExp(
+              vastAdTagParameter.accepted.validation,
+            );
+            if (acceptedValidation.test(parameterValue)) {
+              console.warn(
+                'Parameter value is accepted but not recommended',
+                vastAdTagParameterName,
+                parameterValue,
+              );
+              parameterResult.score = optionalParameter
+                ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_VALID
+                : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_VALID;
+              parameterResult.exists = true;
+              parameterResult.valid = true;
+              parameterResult.accepted = true;
+            } else {
+              // Parameter value is neither valid nor accepted
+              console.warn(
+                'Invalid parameter value',
+                vastAdTagParameterName,
+                parameterValue,
+              );
+              parameterResult.score = optionalParameter
+                ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
+                : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+              parameterResult.exists = true;
+              parameterResult.valid = false;
+            }
+          } else {
+            // No accepted values defined, so it's just invalid
+            console.warn(
+              'Invalid parameter value',
+              vastAdTagParameterName,
+              parameterValue,
+            );
+            parameterResult.score = optionalParameter
+              ? VastURLAnalyzer.DefaultScore.OPTIONAL_PARAM_MISSING
+              : VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+            parameterResult.exists = true;
+            parameterResult.valid = false;
+          }
         } else {
           console.info(
             'Validated parameter',

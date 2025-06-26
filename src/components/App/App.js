@@ -20,38 +20,9 @@
  */
 
 import React from 'react';
-
-import Alert from '@mui/material/Alert';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import FormControl from '@mui/material/FormControl';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import Snackbar from '@mui/material/Snackbar';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-
-import VastURLValidator from '../Validator/VastURLValidator';
-import VastURLParser from '../Parser/VastURLParser';
-import VastURLAnalyzer from '../Analyzer/VastURLAnalyzer';
-import VastURLParameters from '../Reporting/VastURLParameters';
-
-import BugReportIcon from '@mui/icons-material/BugReport';
-import CodeIcon from '@mui/icons-material/Code';
-import HelpIcon from '@mui/icons-material/Help';
-import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
-import InsightsIcon from '@mui/icons-material/Insights';
-import MenuIcon from '@mui/icons-material/Menu';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import TourIcon from '@mui/icons-material/Tour';
-import WarningIcon from '@mui/icons-material/Warning';
 
 import {
   TAG_TYPE,
@@ -59,18 +30,28 @@ import {
   EXAMPLE_VAST_URLS,
 } from '../../constants';
 import { decodeState } from '../../utils/encoder';
-import ShareButton from '../Button/ShareButton';
-import VastURLScore from '../Reporting/VastURLScore';
+import {
+  validateUrl,
+  analyzeUrl,
+  handleNavigation,
+} from '../../services/AnalyzerService';
 
-// Lazy load less frequently used components
-const Joyride = React.lazy(() => import('react-joyride'));
+// Import components
+import AppHeader from '../Header/AppHeader';
+import URLInputForm from '../Form/URLInputForm';
+import TagTypeSelector from '../Form/TagTypeSelector';
+import ImplementationTypeSelector from '../Form/ImplementationTypeSelector';
+import NotificationManager from '../Notifications/NotificationManager';
+import TourManager from '../tour/TourManager';
+import AnalysisResults from '../Reporting/AnalysisResults';
 
+// Constants
 const TOUR_KEY = 'vast-inspector-tour-seen';
 
 /**
  * @class
  */
-class App extends React.Component {
+class App extends React.PureComponent {
   /**
    * @param {*} props
    * @constructor
@@ -86,13 +67,19 @@ class App extends React.Component {
       analysisResult: null,
       showShareSnackbar: false,
       showDebug: false,
-      error: null,
-      error_message: '',
-      warning: null,
-      warning_message: '',
-      runTour: false,
-      tourSteps: [],
-      showJoyride: false,
+      error: {
+        present: false,
+        message: '',
+      },
+      warning: {
+        present: false,
+        message: '',
+      },
+      tour: {
+        run: false,
+        steps: [],
+        show: false,
+      },
     };
     this.handleAnalyzeClick = this.handleAnalyzeClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -159,25 +146,39 @@ class App extends React.Component {
    * @param {string} url
    */
   validateUrl(url) {
-    const validator = new VastURLValidator(url);
-    const validationResult = validator.validate();
-    if (validationResult.success) {
+    // Skip validation for empty URLs
+    if (!url || url.trim() === '') {
       this.setState({
-        error: null,
-        error_message: '',
-        warning: validationResult.warning,
-        warning_message: validationResult.warning_message,
-        detectedVastTagType: validationResult.tagType,
-        vastTagType: validationResult.tagType,
+        error: {
+          present: false,
+          message: '',
+          details: null,
+        },
+        warning: {
+          present: false,
+          message: '',
+          details: null,
+        },
+        detectedVastTagType: TAG_TYPE.UNKNOWN,
       });
-    } else {
-      this.setState({
-        error: validationResult.error,
-        error_message: validationResult.error_message,
-        detectedVastTagType: validationResult.tagType,
-        vastTagType: validationResult.tagType,
-      });
+      return;
     }
+
+    const validationResult = validateUrl(url);
+    this.setState({
+      error: {
+        present: !validationResult.success,
+        message: validationResult.error_message || '',
+        details: validationResult.error,
+      },
+      warning: {
+        present: !!validationResult.warning,
+        message: validationResult.warning_message || '',
+        details: validationResult.warning,
+      },
+      detectedVastTagType: validationResult.tagType,
+      vastTagType: validationResult.tagType,
+    });
   }
 
   /**
@@ -228,53 +229,48 @@ class App extends React.Component {
   }
 
   /**
-   * @return {Promise}
+   * Performs URL analysis and updates state with results
+   * @return {Promise<void>}
    */
   async analysisResult() {
-    const { vastRedirectURL } = this.state;
+    const { vastRedirectURL, vastTagType, implementationType } = this.state;
 
-    // Parse URL and extract parameters
-    const parser = new VastURLParser(vastRedirectURL);
-    const parseResult = parser.parse();
-    if (!parseResult.success) {
-      await new Promise((resolve) => {
-        this.setState(
-          {
-            error: parseResult.error,
-            vastParameters: {},
-            analysisResult: {},
-          },
-          resolve,
-        );
+    try {
+      this.setState({ isLoading: true });
+
+      const result = await analyzeUrl(
+        vastRedirectURL,
+        vastTagType,
+        implementationType,
+      );
+
+      // Update state with analysis results
+      this.setState({
+        vastParameters: result.success ? result.vastParameters : {},
+        analysisResult: result.success ? result.analysisResult : {},
+        error: {
+          present: !result.success,
+          message: result.error ? result.error.toString() : '',
+          details: result.error,
+        },
+        // Reset warning if analysis was successful
+        warning: result.success
+          ? { present: false, message: '', details: null }
+          : this.state.warning,
       });
-      return;
-    }
-    await new Promise((resolve) => {
-      this.setState({ vastParameters: parseResult.params }, resolve);
-    });
-
-    // Analyze Vast URL based on the parsed parameters
-    const analyzer = new VastURLAnalyzer(
-      vastRedirectURL,
-      parseResult.params,
-      this.state.vastTagType,
-      this.state.implementationType,
-    );
-    const analyzerResult = analyzer.analyze();
-    if (!analyzerResult.success) {
-      await new Promise((resolve) => {
-        this.setState(
-          { error: analyzerResult.error, analysisResult: {} },
-          resolve,
-        );
+    } catch (error) {
+      // Handle unexpected errors
+      console.error('Analysis failed:', error);
+      this.setState({
+        error: {
+          present: true,
+          message: 'An unexpected error occurred during analysis.',
+          details: error,
+        },
       });
-      return;
+    } finally {
+      this.setState({ isLoading: false });
     }
-
-    // Update state with the analysis result
-    await new Promise((resolve) => {
-      this.setState({ analysisResult: analyzerResult.analysisResult }, resolve);
-    });
   }
 
   /**
@@ -283,28 +279,10 @@ class App extends React.Component {
    */
   handleToolbarClick(event, key) {
     event.preventDefault();
-    switch (key) {
-      case 'Home':
-        window.location.href = '/vast-redirect-signal-inspector/';
-        break;
-      case 'Source':
-        window.open(
-          'https://github.com/google-marketing-solutions/vast-redirect-signal-inspector',
-        );
-        break;
-      case 'Issues':
-        window.open(
-          'https://github.com/google-marketing-solutions/vast-redirect-signal-inspector/issues',
-        );
-        break;
-      case 'Tour':
-        this.handleStartTour();
-        break;
-      case 'Help':
-        window.open('https://support.google.com/admanager/answer/10678356');
-        break;
-      default:
-        break;
+    if (key === 'Tour') {
+      this.handleStartTour();
+    } else {
+      handleNavigation(key);
     }
   }
 
@@ -327,37 +305,101 @@ class App extends React.Component {
    * @param {Object} data - The Joyride event data.
    */
   handleTourCallback(data) {
-    if (data.status === 'finished' || data.status === 'skipped') {
+    const { status, index, type } = data;
+    const { vastRedirectURL } = this.state;
+
+    if (status === 'finished' || status === 'skipped') {
       localStorage.setItem(TOUR_KEY, '1');
-      this.setState({ runTour: false });
-    } else if (data.index === 0 && !this.state.vastRedirectURL) {
+      this.setState((prevState) => ({
+        tour: {
+          ...prevState.tour,
+          run: false,
+        },
+      }));
+    } else if (index === 0 && !vastRedirectURL) {
       const exampleUrl = EXAMPLE_VAST_URLS[TAG_TYPE.STANDARD];
       this.setState({ vastRedirectURL: exampleUrl }, () => {
         this.validateUrl(exampleUrl);
-        this.setState({ runTour: false }, () => {
-          setTimeout(() => this.setState({ runTour: true }), 100);
-        });
+
+        // First hide tour
+        this.setState(
+          (prevState) => ({
+            tour: {
+              ...prevState.tour,
+              run: false,
+            },
+          }),
+          () => {
+            // Then show tour after a short delay to ensure re-render
+            setTimeout(
+              () =>
+                this.setState((prevState) => ({
+                  tour: {
+                    ...prevState.tour,
+                    run: true,
+                  },
+                })),
+              100,
+            );
+          },
+        );
       });
-    } else if (data.index === 4) {
-      this.analysisResult();
+    } else if (index === 3 && type === 'step:after') {
+      // Analyze button step - trigger analysis and ensure proper timing
+      setTimeout(() => {
+        this.analysisResult();
+      }, 100);
     }
   }
 
   /**
-   * Start the tour, if not already started.
+   * Lazy loads the tour steps and starts the tour
    */
   handleStartTour() {
-    if (!this.state.tourSteps.length) {
-      import('../tour/TourSteps').then((module) => {
-        this.setState({
-          tourSteps: module.default,
-          runTour: true,
-          showJoyride: true,
+    if (!this.state.tour.steps.length) {
+      import('../tour/TourSteps')
+        .then((module) => {
+          this.setState(() => ({
+            tour: {
+              steps: module.default,
+              run: true,
+              show: true,
+            },
+          }));
+        })
+        .catch((error) => {
+          console.error('Failed to load tour steps:', error);
         });
-      });
     } else {
-      this.setState({ runTour: true, showJoyride: true });
+      this.setState((prevState) => ({
+        tour: {
+          ...prevState.tour,
+          run: true,
+          show: true,
+        },
+      }));
     }
+  }
+
+  /**
+   * @param {string} tagType - The selected tag type
+   * @param {string} detectedType - The detected tag type
+   * @param {string} url - The URL being analyzed
+   * @return {boolean} Whether to show the warning
+   */
+  shouldShowDetectionWarning(tagType, detectedType, url) {
+    return tagType && detectedType && url && tagType !== detectedType;
+  }
+
+  /**
+   * @param {string} url - The URL to analyze
+   * @param {Object} result - The current analysis result
+   * @return {boolean} Whether the analyze button should be disabled
+   */
+  isAnalyzeButtonDisabled(url, result) {
+    return (
+      !url || (result && Object.keys(result).length > 0 && url === result.url)
+    );
   }
 
   /**
@@ -366,9 +408,7 @@ class App extends React.Component {
   render() {
     const {
       error,
-      error_message,
       warning,
-      warning_message,
       detectedVastTagType,
       implementationType,
       showDebug,
@@ -376,156 +416,51 @@ class App extends React.Component {
       vastTagType,
       vastRedirectURL,
       analysisResult,
+      tour,
     } = this.state;
-    const showDetectionWarning =
-      vastTagType &&
-      detectedVastTagType &&
-      vastRedirectURL &&
-      vastTagType !== detectedVastTagType;
 
-    // Navigation items
-    const navItems = [
-      { name: 'Home', icon: <HomeIcon /> },
-      { name: 'Source', icon: <CodeIcon /> },
-      { name: 'Issues', icon: <BugReportIcon /> },
-      { name: 'Tour', icon: <TourIcon /> },
-      { name: 'Help', icon: <HelpIcon /> },
-      { name: 'About', icon: <InfoIcon /> },
-    ];
+    // Use memoized helper methods for derived state
+    const showDetectionWarning = this.shouldShowDetectionWarning(
+      vastTagType,
+      detectedVastTagType,
+      vastRedirectURL,
+    );
+
+    const isAnalyzeDisabled = this.isAnalyzeButtonDisabled(
+      vastRedirectURL,
+      analysisResult,
+    );
 
     return (
       <Box sx={{ display: 'flex' }}>
-        <React.Suspense fallback={null}>
-          {this.state.showJoyride && (
-            <Joyride
-              run={this.state.runTour}
-              steps={this.state.tourSteps}
-              continuous
-              showSkipButton
-              showProgress
-              disableOverlayClose={true}
-              callback={this.handleTourCallback}
-              styles={{
-                options: { maxWidth: 800, zIndex: 10000 },
-                tooltip: {
-                  minWidth: 480,
-                  maxWidth: 800,
-                  fontSize: 16,
-                  padding: '12px',
-                },
-              }}
-              scrollOffset={128}
-            />
-          )}
-        </React.Suspense>
+        <TourManager
+          run={tour.run}
+          steps={tour.steps}
+          callback={this.handleTourCallback}
+          showTour={tour.show}
+        />
 
-        {error && (
-          <Snackbar
-            open={open}
-            autoHideDuration={10000}
-            onClose={() => this.setState({ error: null })}
-            sx={{ width: '100%' }}
-          >
-            <Alert
-              severity="error"
-              onClose={() => this.setState({ error: null })}
-            >
-              {error_message ? error_message : error}
-            </Alert>
-          </Snackbar>
-        )}
-        {warning && (
-          <Snackbar
-            open={open}
-            autoHideDuration={10000}
-            onClose={() => this.setState({ warning: null })}
-            sx={{ width: '100%' }}
-          >
-            <Alert
-              severity="warning"
-              onClose={() => this.setState({ warning: null })}
-            >
-              {warning_message ? warning_message : warning}
-            </Alert>
-          </Snackbar>
-        )}
-        {showShareSnackbar && (
-          <Snackbar
-            open={true}
-            autoHideDuration={3000}
-            onClose={() => this.setState({ showShareSnackbar: false })}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-          >
-            <Alert
-              onClose={() => this.setState({ showShareSnackbar: false })}
-              severity="success"
-              sx={{ width: '100%' }}
-            >
-              Shareable URL copied to clipboard!
-            </Alert>
-          </Snackbar>
-        )}
+        <NotificationManager
+          error={error.present ? error.message || true : null}
+          errorMessage={error.message}
+          onErrorClose={() =>
+            this.setState({
+              error: { present: false, message: '', details: null },
+            })
+          }
+          warning={warning.present ? warning.message || true : null}
+          warningMessage={warning.message}
+          onWarningClose={() =>
+            this.setState({
+              warning: { present: false, message: '', details: null },
+            })
+          }
+          showShareSuccess={showShareSnackbar}
+          onShareClose={() => this.setState({ showShareSnackbar: false })}
+        />
 
-        <AppBar component="nav">
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={() => {}}
-              sx={{ mr: 2, display: { sm: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{
-                flexGrow: 1,
-                display: { xs: 'none', sm: 'block', verticalAlign: 'middle' },
-              }}
-            >
-              <img
-                src="https://raw.githubusercontent.com/google-marketing-solutions/vast-redirect-signal-inspector/main/assets/png/logo_home.png"
-                alt="Logo"
-                style={{
-                  height: '0.7em',
-                  width: 'auto',
-                  verticalAlign: 'middle',
-                  margin: '0 10px 5px 0',
-                }}
-              />
-              VAST Signal Inspector v{VERSION}
-              <span
-                style={{
-                  backgroundColor: '#e0e0e0',
-                  color: '#333',
-                  padding: '2px 5px',
-                  borderRadius: '3px',
-                  fontSize: '0.7em',
-                  marginLeft: '5px',
-                }}
-              >
-                Beta
-              </span>
-            </Typography>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {navItems.map((item) => (
-                <Button
-                  key={item.name}
-                  sx={{
-                    color: '#fff',
-                    gap: 1,
-                  }}
-                  onClick={(event) => this.handleToolbarClick(event, item.name)}
-                >
-                  {item.icon}
-                  {item.name}
-                </Button>
-              ))}
-            </Box>
-          </Toolbar>
-        </AppBar>
+        <AppHeader version={VERSION} onNavigate={this.handleToolbarClick} />
+
         <Box component="main" sx={{ flexGrow: 1 }}>
           <Toolbar />
           <Container
@@ -537,158 +472,38 @@ class App extends React.Component {
               minHeight: '100vh',
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-                mb: 2,
-              }}
-            >
-              <TextField
-                className="vast-redirect-url-input"
-                label="Vast Redirect URL"
-                value={vastRedirectURL}
-                variant="outlined"
-                fullWidth
-                sx={{ mr: 2 }}
-                onChange={this.handleChange}
-              />
-              <Button
-                className="analyze-button"
-                variant="contained"
-                color="primary"
-                size="large"
-                startIcon={<InsightsIcon />}
-                onClick={this.handleAnalyzeClick}
-                disabled={
-                  !vastRedirectURL ||
-                  (analysisResult &&
-                    Object.keys(analysisResult).length > 0 &&
-                    vastRedirectURL === analysisResult.url)
-                }
-              >
-                Analyze
-              </Button>
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
-              }}
-            >
-              <FormControl component="fieldset" sx={{ display: 'inline-flex' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  {showDetectionWarning && (
-                    <Tooltip title="Manually selected tag type does not match the automatically detected tag type.">
-                      <IconButton aria-label="warning" color="warning">
-                        <WarningIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  <RadioGroup
-                    aria-label="vast-tag-type"
-                    className="vast-tag-type-radio-group"
-                    name="vastTagType"
-                    value={vastTagType}
-                    onChange={this.handleTagTypeChange}
-                    row
-                  >
-                    {Object.values(TAG_TYPE)
-                      .filter(
-                        (type) =>
-                          type !== TAG_TYPE.UNKNOWN ||
-                          vastTagType === TAG_TYPE.UNKNOWN,
-                      )
-                      .map((type) => (
-                        <FormControlLabel
-                          key={type}
-                          value={type}
-                          control={<Radio />}
-                          label={type
-                            .replace(/_/g, ' ')
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        />
-                      ))}
-                  </RadioGroup>
-                  <Button
-                    variant="outlined"
-                    startIcon={<PlayCircleOutlineIcon />}
-                    onClick={this.handleExampleClick}
-                    sx={{ ml: 2 }}
-                    disabled={
-                      EXAMPLE_VAST_URLS[vastTagType] === undefined ||
-                      vastRedirectURL === EXAMPLE_VAST_URLS[vastTagType]
-                    }
-                  >
-                    Load Example
-                  </Button>
-                </Box>
-              </FormControl>
-            </Box>
-            <FormControl
-              component="fieldset"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 2,
-              }}
-            >
-              {' '}
-              <Typography variant="body1">Implementation Type:</Typography>
-              <RadioGroup
-                aria-label="implementation-type"
-                className="implementation-type-radio-group"
-                name="implementationType"
-                value={implementationType}
-                onChange={this.handleImplementationTypeChange}
-                row
-              >
-                {Object.values(IMPLEMENTATION_TYPE).map((type) => (
-                  <FormControlLabel
-                    key={type}
-                    value={type}
-                    control={<Radio />}
-                    label={type
-                      .replace(/_/g, ' ')
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
+            <URLInputForm
+              url={vastRedirectURL}
+              onChange={this.handleChange}
+              onAnalyze={this.handleAnalyzeClick}
+              isAnalyzeDisabled={isAnalyzeDisabled}
+            />
 
-            <Box className="vast-url-score-result">
-              <Box minHeight={180}>
-                {analysisResult && Object.keys(analysisResult).length > 0 && (
-                  <VastURLScore data={analysisResult} />
-                )}
-              </Box>
-            </Box>
+            <TagTypeSelector
+              selectedTagType={vastTagType}
+              detectedTagType={detectedVastTagType}
+              url={vastRedirectURL}
+              showWarning={showDetectionWarning}
+              tagTypes={TAG_TYPE}
+              exampleUrls={EXAMPLE_VAST_URLS}
+              onTagTypeChange={this.handleTagTypeChange}
+              onExampleClick={this.handleExampleClick}
+            />
 
-            {analysisResult && Object.keys(analysisResult).length > 0 && (
-              <ShareButton
-                state={{
-                  vastRedirectURL,
-                  vastTagType,
-                  implementationType,
-                }}
-                onShare={() => this.setState({ showShareSnackbar: true })}
-                disabled={vastRedirectURL !== analysisResult.url}
-              />
-            )}
+            <ImplementationTypeSelector
+              selectedType={implementationType}
+              implementationTypes={IMPLEMENTATION_TYPE}
+              onChange={this.handleImplementationTypeChange}
+            />
 
-            {analysisResult && Object.keys(analysisResult).length > 0 && (
-              <VastURLParameters data={analysisResult} showDebug={showDebug} />
-            )}
+            <AnalysisResults
+              analysisResult={analysisResult}
+              vastRedirectURL={vastRedirectURL}
+              vastTagType={vastTagType}
+              implementationType={implementationType}
+              showDebug={showDebug}
+              onShareClick={() => this.setState({ showShareSnackbar: true })}
+            />
           </Container>
         </Box>
       </Box>

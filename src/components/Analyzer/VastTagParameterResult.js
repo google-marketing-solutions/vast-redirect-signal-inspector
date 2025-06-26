@@ -34,6 +34,7 @@ class VastTagParameterResult {
     this._score = score;
     this._exists = false;
     this._valid = false;
+    this._accepted = false;
     this._override = false;
     this._sdkManaged = false;
     this._deprecated = '';
@@ -94,6 +95,20 @@ class VastTagParameterResult {
    */
   set valid(valid) {
     this._valid = valid;
+  }
+
+  /**
+   * @return {boolean}
+   */
+  get accepted() {
+    return this._accepted;
+  }
+
+  /**
+   * @param {boolean} accepted
+   */
+  set accepted(accepted) {
+    this._accepted = accepted;
   }
 
   /**

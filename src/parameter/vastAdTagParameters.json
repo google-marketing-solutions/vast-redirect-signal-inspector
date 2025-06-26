@@ -131,6 +131,9 @@
     "description": "A flag that indicates whether the user has opted out of ad personalization.",
     "examples": ["0", "1"],
     "validation": "^(0|1)$",
+    "accepted": {
+      "validation": "^(false|true)$"
+    },
     "help": "https://support.google.com/admanager/answer/6238701?hl=en"
   },
   {
@@ -146,9 +149,19 @@
   {
     "name": "vpmute",
     "description": "A flag that indicates whether the video player is muted.",
-    "examples": ["0", "1", "false", "true"],
-    "validation": "^(0|1|false|true)$",
+    "examples": ["0", "1"],
+    "validation": "^(0|1)$",
+    "accepted": {
+      "validation": "^(false|true)$"
+    },
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cvpmute-video-play-mute"
+  },
+  {
+    "name": "vid_d",
+    "description": "The duration of the video content in seconds.",
+    "examples": ["30", "60", "120", "90000"],
+    "validation": "^\\d{1,6}$",
+    "help": "https://support.google.com/admanager/answer/10678356?hl=en#vid_d&zippy=%2Cvpos-video-position%2Cvid-d-video-duration%2Csee-a-clickable-alphabetical-index-of-all-parameters"
   },
   {
     "name": "vpa",
@@ -162,6 +175,9 @@
     "description": "Indicates the video player's support for rendering ad badging 'Why this ad?'",
     "examples": ["0", "1"],
     "validation": "^(0|1)$",
+    "accepted": {
+      "validation": "^(false|true)$"
+    },
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cwta-why-this-ad"
   },
   {
