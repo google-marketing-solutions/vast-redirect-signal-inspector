@@ -193,22 +193,52 @@ class VastURLScore extends React.Component {
       recommendedProgrammaticParametersScore,
     );
 
+    // Define responsive styles for the circular progress components
+    const circularProgressSx = {
+      '--CircularProgress-trackThickness': '20px',
+      '--CircularProgress-size': '150px',
+      '--CircularProgress-progressThickness': '25px',
+      '@media (max-width: 768px)': {
+        '--CircularProgress-trackThickness': '15px',
+        '--CircularProgress-size': '120px',
+        '--CircularProgress-progressThickness': '20px',
+      },
+      '@media (max-width: 480px)': {
+        '--CircularProgress-trackThickness': '12px',
+        '--CircularProgress-size': '100px',
+        '--CircularProgress-progressThickness': '15px',
+      },
+    };
+
+    // Define responsive styles for typography
+    const titleTypographySx = {
+      '@media (max-width: 768px)': {
+        fontSize: '1.2rem',
+      },
+      '@media (max-width: 480px)': {
+        fontSize: '1rem',
+      },
+    };
+
     return (
       <Box>
         <Grid
           container
-          spacing={5}
-          direction="row"
+          spacing={2}
+          direction={{ xs: 'column', sm: 'row' }}
           alignItems="center"
           justifyContent="center"
+          sx={{ mb: { xs: 4, sm: 2 } }}
         >
-          <Grid size={3}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+          >
             <CircularProgress
-              sx={{
-                '--CircularProgress-trackThickness': '20px',
-                '--CircularProgress-size': '150px',
-                '--CircularProgress-progressThickness': '25px',
-              }}
+              sx={circularProgressSx}
               variant="soft"
               determinate
               value={weightedScore}
@@ -216,15 +246,19 @@ class VastURLScore extends React.Component {
             >
               {weightedScore}%
             </CircularProgress>
-            <Typography variant="h5">Weighted Score</Typography>
+            <Typography variant="h5" sx={titleTypographySx}>
+              Weighted Score
+            </Typography>
           </Grid>
-          <Grid size={3}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+          >
             <CircularProgress
-              sx={{
-                '--CircularProgress-trackThickness': '20px',
-                '--CircularProgress-size': '150px',
-                '--CircularProgress-progressThickness': '25px',
-              }}
+              sx={circularProgressSx}
               variant="soft"
               determinate
               value={requiredParametersScore.completion}
@@ -234,17 +268,29 @@ class VastURLScore extends React.Component {
             >
               {requiredParametersScore.completion}%
             </CircularProgress>
-            <Typography variant="h5" style={{ paddingLeft: '30px' }}>
+            <Typography
+              variant="h5"
+              sx={{
+                ...titleTypographySx,
+                paddingLeft: {
+                  xs: '10px',
+                  sm: '15px',
+                  md: '30px',
+                },
+              }}
+            >
               Required
             </Typography>
           </Grid>
-          <Grid size={3}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+          >
             <CircularProgress
-              sx={{
-                '--CircularProgress-trackThickness': '20px',
-                '--CircularProgress-size': '150px',
-                '--CircularProgress-progressThickness': '25px',
-              }}
+              sx={circularProgressSx}
               variant="soft"
               determinate
               value={requiredProgrammaticParametersScore.completion}
@@ -254,26 +300,41 @@ class VastURLScore extends React.Component {
             >
               {requiredProgrammaticParametersScore.completion}%
             </CircularProgress>
-            <Typography variant="h5">Programmatic</Typography>
+            <Typography variant="h5" sx={titleTypographySx}>
+              Programmatic
+            </Typography>
           </Grid>
-          <Grid size={3}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={3}
+            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+          >
             <CircularProgress
-              sx={{
-                '--CircularProgress-trackThickness': '20px',
-                '--CircularProgress-size': '150px',
-                '--CircularProgress-progressThickness': '25px',
-              }}
+              sx={circularProgressSx}
               variant="soft"
               determinate
               value={recommendedProgrammaticParametersScore.completion}
             >
               {recommendedProgrammaticParametersScore.completion}%
             </CircularProgress>
-            <Typography variant="h5">Recommended</Typography>
+            <Typography variant="h5" sx={titleTypographySx}>
+              Recommended
+            </Typography>
           </Grid>
         </Grid>
         {weightedScore === 0 && requiredParametersScore.total >= 1 && (
-          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+          <Typography
+            variant="body2"
+            color="error"
+            align="center"
+            sx={{
+              mt: { xs: 2, sm: 1 },
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              padding: { xs: '0 16px' },
+            }}
+          >
             The weighted score is 0% because at least one required parameter is
             missing.
           </Typography>

@@ -26,7 +26,7 @@ const vastTourSteps = [
     target: '.vast-redirect-url-input',
     content: (
       <div>
-        <b>Step 1: Enter your VAST URL</b>
+        <b>Enter your VAST URL</b>
         <br />
         Add the VAST URL you are sending to the ad server into this field.
         <br />
@@ -39,12 +39,20 @@ const vastTourSteps = [
       </div>
     ),
     disableBeacon: true,
+    placement: 'bottom',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 100,
   },
   {
     target: '.vast-tag-type-radio-group',
     content: (
       <div>
-        <b>Step 2: Check VAST Tag Type</b>
+        <b>Check VAST Tag Type</b>
         <br />
         Make sure the detected VAST Tag Type is correct. The radio box updates
         automatically based on the detected type, but you can adjust it if
@@ -58,13 +66,19 @@ const vastTourSteps = [
         </small>
       </div>
     ),
-    disableScrolling: true,
+    placement: 'right',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
   },
   {
     target: '.implementation-type-radio-group',
     content: (
       <div>
-        <b>Step 3: Set Implementation Type</b>
+        <b>Set Implementation Type</b>
         <br />
         Choose the Implementation Type that applies to your setup. Different
         requirements and checks will be applied depending on your selection.
@@ -74,29 +88,42 @@ const vastTourSteps = [
         </small>
       </div>
     ),
-    disableScrolling: true,
+    placement: 'right',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
   },
   {
     target: '.analyze-button',
     content: (
       <div>
-        <b>Step 4: Analyze</b>
+        <b>Analyze</b>
         <br />
         Click this button to analyze your VAST URL. The result will be shown
         below.
       </div>
     ),
-    disableScrolling: true,
+    placement: 'right',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    disableBeacon: true,
   },
   {
-    target: '.not_existed_dummy_to_fix_anchor',
-    content: '',
+    target: '.analyze-button',
+    content: 'After clicking, the analysis will start...',
   },
   {
     target: '.vast-url-score-result',
     content: (
       <div>
-        <b>Step 5: Score Overview</b>
+        <b>Score Overview</b>
         <br />
         Here you can see the overall evaluation of your VAST tag, including
         Total Score, Required parameter coverage, Programmatic support, and
@@ -110,18 +137,125 @@ const vastTourSteps = [
         </small>
       </div>
     ),
+    placement: 'top',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 150,
+    disableBeacon: true,
   },
   {
     target: '.vast-url-parameters-required-parameters',
     content: (
       <div>
-        <b>Step 6: Parameter Table</b>
+        <b>Required Parameters</b>
         <br />
-        Here you find a detailed breakdown of all detected parameters, their
-        values, status, and individual scores. Use this section to identify
-        missing or incorrectly configured parameters.
+        These parameters are mandatory for your selected implementation type.
+        Make sure all are present and valid (green checkmarks).
+        <br />
+        <small>
+          <i>
+            Missing or invalid required parameters significantly impact the
+            functionality and quality of your VAST tag.
+          </i>
+        </small>
       </div>
     ),
+    placement: 'left',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 50,
+  },
+  {
+    target: '.vast-url-parameters-required-programmatic-parameters',
+    content: (
+      <div>
+        <b>Required Programmatic Parameters</b>
+        <br />
+        These parameters are essential for programmatic use cases. They enable
+        proper ad serving in programmatic environments.
+        <br />
+        <small>
+          <i>
+            Parameters like vpmute und vpa are also recommended per
+            <a href="http://mediaratingcouncil.org/">
+              The Media Rating Council (MRC) Video Measurement Guidelines
+            </a>
+            .
+          </i>
+        </small>
+      </div>
+    ),
+    placement: 'left',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 50,
+  },
+  {
+    target: '.vast-url-parameters-recommended-programmatic-parameters',
+    content: (
+      <div>
+        <b>Recommended Programmatic Parameters</b>
+        <br />
+        While optional, these parameters improve ad delivery and reporting in
+        programmatic contexts. They provide additional information to help
+        optimize the ad experience.
+        <br />
+        <small>
+          <i>
+            Including these parameters can improve targeting, reporting
+            accuracy, and overall ad performance.
+          </i>
+        </small>
+      </div>
+    ),
+    placement: 'left',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 50,
+  },
+  {
+    target: '.vast-url-parameters-other-parameters',
+    content: (
+      <div>
+        <b>Other Parameters</b>
+        <br />
+        Additional parameters detected in your VAST URL that don&apos;t fall
+        into the previous categories. Check for any orange warnings that
+        indicate accepted but not recommended values.
+        <br />
+        <small>
+          <i>
+            These parameters may not be essential but can provide useful
+            information or functionality. Make sure they are valid and correctly
+            formatted.
+          </i>
+        </small>
+      </div>
+    ),
+    placement: 'top',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
+    scrollOffset: 50,
   },
   {
     target: '.share-button',
@@ -133,6 +267,13 @@ const vastTourSteps = [
         to colleagues or support.
       </div>
     ),
+    placement: 'bottom',
+    floaterProps: {
+      options: {
+        preventOverflow: { enabled: true, boundariesElement: 'viewport' },
+      },
+    },
+    scrollToSteps: true,
   },
 ];
 

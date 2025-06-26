@@ -39,6 +39,49 @@ describe('vastAdTagParameters Validation', () => {
       const regex = new RegExp(validation);
       expect(regex.test(example)).toBe(false);
     });
+
+    if (item.accepted && item.accepted.validation) {
+      it(`Should validate accepted but not recommended values for ${item.name}`, () => {
+        let acceptedExamples = [];
+        if (
+          item.validation === '^(0|1)$' &&
+          item.accepted.validation === '^(false|true)$'
+        ) {
+          acceptedExamples = ['false', 'true'];
+        } else if (item.accepted.examples) {
+          acceptedExamples = item.accepted.examples;
+        } else {
+          return;
+        }
+
+        const acceptedRegex = new RegExp(item.accepted.validation);
+        const mainRegex = new RegExp(item.validation);
+
+        // Each accepted example should pass the accepted validation
+        acceptedExamples.forEach((example) => {
+          expect(acceptedRegex.test(example)).toBe(true);
+          expect(mainRegex.test(example)).toBe(false);
+        });
+
+        // Mock validation function to test combined logic
+        const isValid = (value) =>
+          mainRegex.test(value) || acceptedRegex.test(value);
+        const shouldWarn = (value) =>
+          !mainRegex.test(value) && acceptedRegex.test(value);
+
+        // Check that main examples don't trigger warnings
+        item.examples.forEach((example) => {
+          expect(isValid(example)).toBe(true);
+          expect(shouldWarn(example)).toBe(false);
+        });
+
+        // Check that accepted examples do trigger warnings
+        acceptedExamples.forEach((example) => {
+          expect(isValid(example)).toBe(true);
+          expect(shouldWarn(example)).toBe(true);
+        });
+      });
+    }
   });
 });
 
