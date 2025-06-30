@@ -24,7 +24,9 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 import InsightsIcon from '@mui/icons-material/Insights';
+import * as styles from './style.module.css';
 
 /**
  * URL input form with analyze button
@@ -32,34 +34,32 @@ import InsightsIcon from '@mui/icons-material/Insights';
  */
 const URLInputForm = ({ url, onChange, onAnalyze, isAnalyzeDisabled }) => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        mb: 2,
-      }}
-    >
+    <Box className={styles.inputFormContainer} id="url-input-form">
       <TextField
-        className="vast-redirect-url-input"
+        className={`${styles.urlTextField} vast-redirect-url-input`}
         label="Vast Redirect URL"
         value={url}
         variant="outlined"
         fullWidth
-        sx={{ mr: 2 }}
         onChange={onChange}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end" className={styles.buttonAdornment}>
+              <Button
+                className={`${styles.analyzeButton} analyze-button`}
+                variant="contained"
+                color="primary"
+                size="large"
+                startIcon={<InsightsIcon />}
+                onClick={onAnalyze}
+                disabled={isAnalyzeDisabled}
+              >
+                Analyze
+              </Button>
+            </InputAdornment>
+          ),
+        }}
       />
-      <Button
-        className="analyze-button"
-        variant="contained"
-        color="primary"
-        size="large"
-        startIcon={<InsightsIcon />}
-        onClick={onAnalyze}
-        disabled={isAnalyzeDisabled}
-      >
-        Analyze
-      </Button>
     </Box>
   );
 };

@@ -24,8 +24,9 @@ import VastURLParser from '../components/Parser/VastURLParser';
 import VastURLAnalyzer from '../components/Analyzer/VastURLAnalyzer';
 
 /**
+ * Validates a VAST URL for correctness and tag type detection.
  * @param {string} url - The URL to validate
- * @return {Object} Validation result
+ * @return {Object} Validation result with success status and detected tag type
  */
 export const validateUrl = (url) => {
   const validator = new VastURLValidator(url);
@@ -33,10 +34,11 @@ export const validateUrl = (url) => {
 };
 
 /**
+ * Performs comprehensive analysis of a VAST URL including parameter extraction and validation.
  * @param {string} url - The URL to analyze
- * @param {string} tagType - The selected tag type
- * @param {string} implementationType - The selected implementation type
- * @return {Promise<Object>} Analysis result
+ * @param {string} tagType - The selected tag type for analysis
+ * @param {string} implementationType - The selected implementation type (web, mobile, etc.)
+ * @return {Promise<Object>} Analysis result with parameters and validation scores
  */
 export const analyzeUrl = async (url, tagType, implementationType) => {
   const result = {

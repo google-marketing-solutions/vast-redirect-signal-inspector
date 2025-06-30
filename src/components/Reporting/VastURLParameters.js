@@ -305,9 +305,17 @@ class VastURLParameters extends React.PureComponent {
   renderTable = (params, title, showDebug = false) => {
     if (!params) return null;
 
+    // Create an ID from the title for navigation scrolling
+    const sectionId = title.toLowerCase().replace(/\s+/g, '-');
+
     return (
       <div
-        style={{ marginBottom: '20px' }}
+        id={sectionId}
+        style={{
+          marginBottom: '20px',
+          scrollMarginTop: '100px',
+          position: 'relative',
+        }}
         className={`vast-url-parameters vast-url-parameters-${title.toLowerCase().replace(/\s/g, '-')}`}
       >
         <Typography
@@ -560,6 +568,43 @@ class VastURLParameters extends React.PureComponent {
           analysisResult.otherParameters,
           'Other Parameters',
           showDebug,
+        )}
+
+        {analysisResult.vastResponse && (
+          <div
+            id="vast-response"
+            style={{ marginBottom: '20px', scrollMarginTop: '100px' }}
+            className="vast-url-parameters vast-url-parameters-vast-response"
+          >
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={(theme) => ({
+                [theme.breakpoints.down('sm')]: {
+                  fontSize: '1rem',
+                  scrollMarginTop: '80px',
+                },
+                [theme.breakpoints.up('sm')]: {
+                  scrollMarginTop: '100px',
+                },
+                position: 'relative',
+                zIndex: 1,
+              })}
+            >
+              VAST Response
+            </Typography>
+            <StyledTableContainer component={Paper}>
+              <div style={{ padding: '16px', overflowX: 'auto' }}>
+                <pre
+                  style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                >
+                  {typeof analysisResult.vastResponse === 'object'
+                    ? JSON.stringify(analysisResult.vastResponse, null, 2)
+                    : analysisResult.vastResponse}
+                </pre>
+              </div>
+            </StyledTableContainer>
+          </div>
         )}
       </div>
     );

@@ -27,6 +27,7 @@ import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import * as styles from './style.module.css';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Tooltip from '@mui/material/Tooltip';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -46,20 +47,15 @@ const TagTypeSelector = ({
   onExampleClick,
 }) => {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        mb: 2,
-      }}
-    >
-      <FormControl component="fieldset" sx={{ display: 'inline-flex' }}>
+    <Box className={styles.formControl}>
+      <FormControl component="fieldset" sx={{ width: '100%' }}>
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 1,
           }}
         >
           {showWarning && (
@@ -76,6 +72,7 @@ const TagTypeSelector = ({
             value={selectedTagType}
             onChange={onTagTypeChange}
             row
+            sx={{ justifyContent: 'center' }}
           >
             {Object.values(tagTypes)
               .filter(
@@ -98,7 +95,7 @@ const TagTypeSelector = ({
             variant="outlined"
             startIcon={<PlayCircleOutlineIcon />}
             onClick={onExampleClick}
-            sx={{ ml: 2 }}
+            className={styles.exampleButton}
             disabled={
               exampleUrls[selectedTagType] === undefined ||
               url === exampleUrls[selectedTagType]

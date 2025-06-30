@@ -19,9 +19,6 @@
  * @author mbordihn@google.com (Markus Bordihn)
  */
 
-/**
- * @class
- */
 class VastURLParser {
   static ErrorCode = {
     URL_EMPTY: 'URL is empty.',
@@ -29,15 +26,16 @@ class VastURLParser {
   };
 
   /**
-   * @param {string} url
-   * @constructor
+   * Creates a new VAST URL parser instance.
+   * @param {string} url - The VAST URL to parse
    */
   constructor(url) {
     this.url = url;
   }
 
   /**
-   * @return {Object}
+   * Parses the VAST URL and extracts all parameters.
+   * @return {Object} Parsed parameters and metadata
    */
   parse() {
     if (!this.url) {
