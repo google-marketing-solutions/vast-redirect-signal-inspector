@@ -33,9 +33,6 @@ import webValidationRules from '../../rules/webValidationRules.json';
 import VastTagAnalyzerResult from './VastTagAnalyzerResult';
 import VastTagParameterResult from './VastTagParameterResult';
 
-/**
- * @class
- */
 class VastURLAnalyzer {
   static ErrorCode = {
     PARAMETERS_EMPTY: 'Parameters are empty.',

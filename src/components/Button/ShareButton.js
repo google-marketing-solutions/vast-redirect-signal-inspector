@@ -49,18 +49,20 @@ class ShareButton extends React.Component {
   }
 
   render() {
+    const { size = 'medium', disabled } = this.props;
     return (
       <Tooltip title="Share analysis state">
         <Button
           variant="outlined"
           color="primary"
-          startIcon={<ShareIcon />}
+          startIcon={<ShareIcon fontSize="small" />}
           className="share-button"
+          sx={{ fontSize: size === 'small' ? '0.8125rem' : 'inherit' }}
           onClick={this.handleShareClick}
-          sx={{ margin: 5 }}
-          disabled={this.props.disabled}
+          size={size}
+          disabled={disabled}
         >
-          Share Analysis
+          {size === 'small' ? 'Share' : 'Share Analysis'}
         </Button>
       </Tooltip>
     );
@@ -71,6 +73,7 @@ ShareButton.propTypes = {
   state: PropTypes.object.isRequired,
   onShare: PropTypes.func,
   disabled: PropTypes.bool,
+  size: PropTypes.oneOf(['small', 'medium', 'large']),
 };
 
 export default ShareButton;

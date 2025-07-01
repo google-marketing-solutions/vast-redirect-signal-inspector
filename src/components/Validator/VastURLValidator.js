@@ -21,9 +21,6 @@
 
 import { TAG_TYPE } from '../../constants';
 
-/**
- * @class
- */
 class VastURLValidator {
   static ErrorCode = {
     URL_EMPTY: 'Empty URL.',
@@ -38,14 +35,16 @@ class VastURLValidator {
   };
 
   /**
-   * @param {URL} url
+   * Creates a new VAST URL validator instance.
+   * @param {string} url - The VAST URL to validate
    */
   constructor(url) {
     this.url = url;
   }
 
   /**
-   * @return {Object}
+   * Validates the VAST URL for correctness and detects tag type.
+   * @return {Object} Validation result with success status, errors, and detected tag type
    */
   validate() {
     if (!this.url) {

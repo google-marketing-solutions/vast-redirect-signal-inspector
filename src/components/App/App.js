@@ -21,8 +21,12 @@
 
 import React from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import * as styles from './style.module.css';
 
 import {
   TAG_TYPE,
@@ -36,7 +40,6 @@ import {
   handleNavigation,
 } from '../../services/AnalyzerService';
 
-// Import components
 import AppHeader from '../Header/AppHeader';
 import URLInputForm from '../Form/URLInputForm';
 import TagTypeSelector from '../Form/TagTypeSelector';
@@ -45,17 +48,9 @@ import NotificationManager from '../Notifications/NotificationManager';
 import TourManager from '../tour/TourManager';
 import AnalysisResults from '../Reporting/AnalysisResults';
 
-// Constants
 const TOUR_KEY = 'vast-inspector-tour-seen';
 
-/**
- * @class
- */
 class App extends React.PureComponent {
-  /**
-   * @param {*} props
-   * @constructor
-   */
   constructor(props) {
     super(props);
     this.state = {
@@ -80,6 +75,7 @@ class App extends React.PureComponent {
         steps: [],
         show: false,
       },
+      showInputControls: true,
     };
     this.handleAnalyzeClick = this.handleAnalyzeClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -91,11 +87,9 @@ class App extends React.PureComponent {
     this.handleExampleClick = this.handleExampleClick.bind(this);
     this.handleTourCallback = this.handleTourCallback.bind(this);
     this.handleStartTour = this.handleStartTour.bind(this);
+    this.toggleInputControls = this.toggleInputControls.bind(this);
   }
 
-  /**
-   * Check if we have a redirect URL in the URL parameters.
-   */
   componentDidMount() {
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -143,7 +137,8 @@ class App extends React.PureComponent {
   }
 
   /**
-   * @param {string} url
+   * Validates and processes a VAST URL, updating state with validation results.
+   * @param {string} url - The VAST URL to validate
    */
   validateUrl(url) {
     // Skip validation for empty URLs
@@ -181,19 +176,19 @@ class App extends React.PureComponent {
     });
   }
 
-  /**
-   * @param {*} event
-   */
   handleChange(event) {
     const newUrl = event.target.value;
-    this.setState({ vastRedirectURL: newUrl }, () => {
-      this.validateUrl(newUrl);
-    });
+    this.setState(
+      {
+        vastRedirectURL: newUrl,
+        showInputControls: true,
+      },
+      () => {
+        this.validateUrl(newUrl);
+      },
+    );
   }
 
-  /**
-   * @param {*} event
-   */
   handleTagTypeChange(event) {
     this.setState(
       {
@@ -206,9 +201,6 @@ class App extends React.PureComponent {
     );
   }
 
-  /**
-   * @param {*} event
-   */
   handleImplementationTypeChange(event) {
     this.setState(
       {
@@ -220,16 +212,22 @@ class App extends React.PureComponent {
     );
   }
 
-  /**
-   * @param {*} event
-   */
   handleAnalyzeClick(event) {
     event.preventDefault();
-    this.analysisResult();
+
+    this.setState({ showInputControls: false }, () => {
+      this.analysisResult();
+    });
+  }
+
+  toggleInputControls() {
+    this.setState((prevState) => ({
+      showInputControls: !prevState.showInputControls,
+    }));
   }
 
   /**
-   * Performs URL analysis and updates state with results
+   * Analyzes the current VAST URL and updates analysis results.
    * @return {Promise<void>}
    */
   async analysisResult() {
@@ -244,7 +242,6 @@ class App extends React.PureComponent {
         implementationType,
       );
 
-      // Update state with analysis results
       this.setState({
         vastParameters: result.success ? result.vastParameters : {},
         analysisResult: result.success ? result.analysisResult : {},
@@ -253,13 +250,12 @@ class App extends React.PureComponent {
           message: result.error ? result.error.toString() : '',
           details: result.error,
         },
-        // Reset warning if analysis was successful
+
         warning: result.success
           ? { present: false, message: '', details: null }
           : this.state.warning,
       });
     } catch (error) {
-      // Handle unexpected errors
       console.error('Analysis failed:', error);
       this.setState({
         error: {
@@ -274,8 +270,9 @@ class App extends React.PureComponent {
   }
 
   /**
-   * @param {*} event
-   * @param {string} key
+   * Handles navigation toolbar clicks.
+   * @param {Event} event - The click event
+   * @param {string} key - The navigation key
    */
   handleToolbarClick(event, key) {
     event.preventDefault();
@@ -286,9 +283,6 @@ class App extends React.PureComponent {
     }
   }
 
-  /**
-   * @param {*} event
-   */
   handleExampleClick(event) {
     event.preventDefault();
     const { vastTagType } = this.state;
@@ -302,7 +296,8 @@ class App extends React.PureComponent {
   }
 
   /**
-   * @param {Object} data - The Joyride event data.
+   * Handles tour state changes and special tour logic.
+   * @param {Object} data - The Joyride event data
    */
   handleTourCallback(data) {
     const { status, index, type } = data;
@@ -320,8 +315,6 @@ class App extends React.PureComponent {
       const exampleUrl = EXAMPLE_VAST_URLS[TAG_TYPE.STANDARD];
       this.setState({ vastRedirectURL: exampleUrl }, () => {
         this.validateUrl(exampleUrl);
-
-        // First hide tour
         this.setState(
           (prevState) => ({
             tour: {
@@ -330,7 +323,6 @@ class App extends React.PureComponent {
             },
           }),
           () => {
-            // Then show tour after a short delay to ensure re-render
             setTimeout(
               () =>
                 this.setState((prevState) => ({
@@ -345,16 +337,12 @@ class App extends React.PureComponent {
         );
       });
     } else if (index === 3 && type === 'step:after') {
-      // Analyze button step - trigger analysis and ensure proper timing
       setTimeout(() => {
         this.analysisResult();
       }, 100);
     }
   }
 
-  /**
-   * Lazy loads the tour steps and starts the tour
-   */
   handleStartTour() {
     if (!this.state.tour.steps.length) {
       import('../tour/TourSteps')
@@ -403,43 +391,37 @@ class App extends React.PureComponent {
   }
 
   /**
-   * @return {Object}
+   * @return {React.ReactNode}
+   * @override
    */
   render() {
     const {
-      error,
-      warning,
+      analysisResult,
+      vastRedirectURL,
+      vastTagType,
       detectedVastTagType,
       implementationType,
+      error,
+      warning,
       showDebug,
-      showShareSnackbar,
-      vastTagType,
-      vastRedirectURL,
-      analysisResult,
+      isAnalyzeDisabled,
+      showDetectionWarning,
       tour,
+      showShareSnackbar,
+      showInputControls,
     } = this.state;
 
-    // Use memoized helper methods for derived state
-    const showDetectionWarning = this.shouldShowDetectionWarning(
-      vastTagType,
-      detectedVastTagType,
-      vastRedirectURL,
-    );
-
-    const isAnalyzeDisabled = this.isAnalyzeButtonDisabled(
-      vastRedirectURL,
-      analysisResult,
-    );
+    const hasResults = analysisResult && Object.keys(analysisResult).length > 0;
+    const containerClassName = hasResults ? '' : styles.noResultsContainer;
 
     return (
-      <Box sx={{ display: 'flex' }}>
+      <Box className={styles.mainFlexbox}>
         <TourManager
           run={tour.run}
           steps={tour.steps}
+          show={tour.show}
           callback={this.handleTourCallback}
-          showTour={tour.show}
         />
-
         <NotificationManager
           error={error.present ? error.message || true : null}
           errorMessage={error.message}
@@ -459,42 +441,71 @@ class App extends React.PureComponent {
           onShareClose={() => this.setState({ showShareSnackbar: false })}
         />
 
-        <AppHeader version={VERSION} onNavigate={this.handleToolbarClick} />
+        <AppHeader
+          version={VERSION}
+          onNavigate={this.handleToolbarClick}
+          analysisResult={analysisResult}
+        />
 
         <Box component="main" sx={{ flexGrow: 1 }}>
           <Toolbar />
           <Container
             maxWidth="lg"
-            sx={{
-              mt: 5,
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: '100vh',
-            }}
+            className={`${styles.container} ${containerClassName}`}
           >
-            <URLInputForm
-              url={vastRedirectURL}
-              onChange={this.handleChange}
-              onAnalyze={this.handleAnalyzeClick}
-              isAnalyzeDisabled={isAnalyzeDisabled}
-            />
+            <Box className={styles.inputSection}>
+              <URLInputForm
+                url={vastRedirectURL}
+                onChange={this.handleChange}
+                onAnalyze={this.handleAnalyzeClick}
+                isAnalyzeDisabled={isAnalyzeDisabled}
+              />
 
-            <TagTypeSelector
-              selectedTagType={vastTagType}
-              detectedTagType={detectedVastTagType}
-              url={vastRedirectURL}
-              showWarning={showDetectionWarning}
-              tagTypes={TAG_TYPE}
-              exampleUrls={EXAMPLE_VAST_URLS}
-              onTagTypeChange={this.handleTagTypeChange}
-              onExampleClick={this.handleExampleClick}
-            />
+              <Box className={styles.settingsToggleContainer}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={this.toggleInputControls}
+                  startIcon={
+                    showInputControls ? (
+                      <KeyboardArrowUpIcon />
+                    ) : (
+                      <KeyboardArrowDownIcon />
+                    )
+                  }
+                  className={styles.settingsToggleButton}
+                >
+                  {showInputControls
+                    ? 'Hide Advanced Analysis Settings'
+                    : 'Show Advanced Analysis Settings'}
+                </Button>
+              </Box>
 
-            <ImplementationTypeSelector
-              selectedType={implementationType}
-              implementationTypes={IMPLEMENTATION_TYPE}
-              onChange={this.handleImplementationTypeChange}
-            />
+              <Box
+                className={`${styles.advancedSettings} ${
+                  showInputControls
+                    ? styles.advancedSettingsVisible
+                    : styles.advancedSettingsHidden
+                }`}
+              >
+                <TagTypeSelector
+                  selectedTagType={vastTagType}
+                  detectedTagType={detectedVastTagType}
+                  url={vastRedirectURL}
+                  showWarning={showDetectionWarning}
+                  tagTypes={TAG_TYPE}
+                  exampleUrls={EXAMPLE_VAST_URLS}
+                  onTagTypeChange={this.handleTagTypeChange}
+                  onExampleClick={this.handleExampleClick}
+                />
+
+                <ImplementationTypeSelector
+                  selectedType={implementationType}
+                  implementationTypes={IMPLEMENTATION_TYPE}
+                  onChange={this.handleImplementationTypeChange}
+                />
+              </Box>
+            </Box>
 
             <AnalysisResults
               analysisResult={analysisResult}

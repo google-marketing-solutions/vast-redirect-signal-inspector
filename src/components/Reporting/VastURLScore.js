@@ -25,6 +25,7 @@ import PropTypes from 'prop-types';
 import { Box } from '@mui/system';
 import { Grid, Typography } from '@mui/material';
 import { CircularProgress } from '@mui/joy';
+import * as styles from './style.module.css';
 
 /**
  * @class
@@ -195,28 +196,31 @@ class VastURLScore extends React.Component {
 
     // Define responsive styles for the circular progress components
     const circularProgressSx = {
-      '--CircularProgress-trackThickness': '20px',
-      '--CircularProgress-size': '150px',
-      '--CircularProgress-progressThickness': '25px',
+      '--CircularProgress-trackThickness': '14px',
+      '--CircularProgress-size': '110px',
+      '--CircularProgress-progressThickness': '18px',
       '@media (max-width: 768px)': {
-        '--CircularProgress-trackThickness': '15px',
-        '--CircularProgress-size': '120px',
-        '--CircularProgress-progressThickness': '20px',
+        '--CircularProgress-trackThickness': '12px',
+        '--CircularProgress-size': '95px',
+        '--CircularProgress-progressThickness': '15px',
       },
       '@media (max-width: 480px)': {
-        '--CircularProgress-trackThickness': '12px',
-        '--CircularProgress-size': '100px',
-        '--CircularProgress-progressThickness': '15px',
+        '--CircularProgress-trackThickness': '10px',
+        '--CircularProgress-size': '80px',
+        '--CircularProgress-progressThickness': '12px',
       },
     };
 
     // Define responsive styles for typography
     const titleTypographySx = {
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginTop: 1,
       '@media (max-width: 768px)': {
-        fontSize: '1.2rem',
+        fontSize: '0.9rem',
       },
       '@media (max-width: 480px)': {
-        fontSize: '1rem',
+        fontSize: '0.8rem',
       },
     };
 
@@ -227,15 +231,21 @@ class VastURLScore extends React.Component {
           spacing={2}
           direction={{ xs: 'column', sm: 'row' }}
           alignItems="center"
-          justifyContent="center"
-          sx={{ mb: { xs: 4, sm: 2 } }}
+          justifyContent="space-evenly"
+          sx={{ mb: { xs: 2, sm: 1 }, width: '100%' }}
         >
           <Grid
             item
             xs={12}
             sm={6}
             md={3}
-            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+            sx={{
+              textAlign: 'center',
+              mb: { xs: 2, sm: 0 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
           >
             <CircularProgress
               sx={circularProgressSx}
@@ -255,7 +265,13 @@ class VastURLScore extends React.Component {
             xs={12}
             sm={6}
             md={3}
-            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+            sx={{
+              textAlign: 'center',
+              mb: { xs: 2, sm: 0 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
           >
             <CircularProgress
               sx={circularProgressSx}
@@ -268,17 +284,7 @@ class VastURLScore extends React.Component {
             >
               {requiredParametersScore.completion}%
             </CircularProgress>
-            <Typography
-              variant="h5"
-              sx={{
-                ...titleTypographySx,
-                paddingLeft: {
-                  xs: '10px',
-                  sm: '15px',
-                  md: '30px',
-                },
-              }}
-            >
+            <Typography variant="h5" sx={titleTypographySx}>
               Required
             </Typography>
           </Grid>
@@ -287,7 +293,13 @@ class VastURLScore extends React.Component {
             xs={12}
             sm={6}
             md={3}
-            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+            sx={{
+              textAlign: 'center',
+              mb: { xs: 2, sm: 0 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
           >
             <CircularProgress
               sx={circularProgressSx}
@@ -309,7 +321,13 @@ class VastURLScore extends React.Component {
             xs={12}
             sm={6}
             md={3}
-            sx={{ textAlign: 'center', mb: { xs: 3, sm: 0 } }}
+            sx={{
+              textAlign: 'center',
+              mb: { xs: 2, sm: 0 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
           >
             <CircularProgress
               sx={circularProgressSx}
@@ -329,11 +347,7 @@ class VastURLScore extends React.Component {
             variant="body2"
             color="error"
             align="center"
-            sx={{
-              mt: { xs: 2, sm: 1 },
-              fontSize: { xs: '0.75rem', sm: '0.875rem' },
-              padding: { xs: '0 16px' },
-            }}
+            className={styles.errorMessage}
           >
             The weighted score is 0% because at least one required parameter is
             missing.

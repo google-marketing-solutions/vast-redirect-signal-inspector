@@ -14,6 +14,72 @@
  * limitations under the License.
  */
 
+.resultsContainer {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.scoreContainer {
+  scroll-margin-top: 80px;
+  margin-bottom: 1.5rem;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  margin-top: -8px;
+  margin-right: -8px;
+}
+
+.errorMessage {
+  margin-top: 1rem;
+  text-align: center;
+  padding: 0 16px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 600px) {
+  .errorMessage {
+    font-size: 0.75rem;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:global(.no-results-container) {
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  :global(.input-form-container) {
+    scroll-margin-top: 60px;
+    padding-top: 0.5rem;
+  }
+
+  :global(.vast-url-parameters) {
+    scroll-margin-top: 80px !important;
+  }
+
+  :global(#vast-response) {
+    scroll-margin-top: 80px !important;
+  }
+}
+
+/* Overlay styles */
 .vastUrlParametersOverlay {
   position: absolute;
   top: 0;

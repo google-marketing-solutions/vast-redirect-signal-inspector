@@ -25,6 +25,7 @@ import Box from '@mui/material/Box';
 import VastURLScore from './VastURLScore';
 import VastURLParameters from './VastURLParameters';
 import ShareButton from '../Button/ShareButton';
+import * as styles from './style.module.css';
 
 /**
  * Displays the analysis results including scores and parameters
@@ -43,25 +44,31 @@ const AnalysisResults = ({
   }
 
   return (
-    <>
-      <Box className="vast-url-score-result">
-        <Box minHeight={180}>
+    <Box className={styles.resultsContainer}>
+      <Box className={styles.headerContainer}>
+        <ShareButton
+          state={{
+            vastRedirectURL,
+            vastTagType,
+            implementationType,
+          }}
+          onShare={onShareClick}
+          disabled={vastRedirectURL !== analysisResult.url}
+          size="small"
+        />
+      </Box>
+
+      <Box
+        id="vast-url-score-result"
+        className={`vast-url-score-result ${styles.scoreContainer}`}
+      >
+        <Box minHeight={120}>
           <VastURLScore data={analysisResult} />
         </Box>
       </Box>
 
-      <ShareButton
-        state={{
-          vastRedirectURL,
-          vastTagType,
-          implementationType,
-        }}
-        onShare={onShareClick}
-        disabled={vastRedirectURL !== analysisResult.url}
-      />
-
       <VastURLParameters data={analysisResult} showDebug={showDebug} />
-    </>
+    </Box>
   );
 };
 

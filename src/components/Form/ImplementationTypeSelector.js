@@ -21,11 +21,13 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
+import * as styles from './style.module.css';
 
 /**
  * Radio button group for selecting implementation types
@@ -37,36 +39,45 @@ const ImplementationTypeSelector = ({
   onChange,
 }) => {
   return (
-    <FormControl
-      component="fieldset"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        mb: 2,
-      }}
-    >
-      <Typography variant="body1">Implementation Type:</Typography>
-      <RadioGroup
-        aria-label="implementation-type"
-        className="implementation-type-radio-group"
-        name="implementationType"
-        value={selectedType}
-        onChange={onChange}
-        row
-      >
-        {Object.values(implementationTypes).map((type) => (
-          <FormControlLabel
-            key={type}
-            value={type}
-            control={<Radio />}
-            label={type
-              .replace(/_/g, ' ')
-              .replace(/\b\w/g, (l) => l.toUpperCase())}
-          />
-        ))}
-      </RadioGroup>
-    </FormControl>
+    <Box className={styles.formControl}>
+      <FormControl component="fieldset" sx={{ width: '100%' }}>
+        <Typography
+          variant="body1"
+          sx={{ textAlign: 'center', marginBottom: 0.5 }}
+        >
+          Implementation Type:
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <RadioGroup
+            aria-label="implementation-type"
+            className="implementation-type-radio-group"
+            name="implementationType"
+            value={selectedType}
+            onChange={onChange}
+            row
+            sx={{ justifyContent: 'center' }}
+          >
+            {Object.values(implementationTypes).map((type) => (
+              <FormControlLabel
+                key={type}
+                value={type}
+                control={<Radio />}
+                label={type
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+              />
+            ))}
+          </RadioGroup>
+        </Box>
+      </FormControl>
+    </Box>
   );
 };
 
