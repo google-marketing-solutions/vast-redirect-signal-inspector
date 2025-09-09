@@ -419,7 +419,7 @@ class App extends React.PureComponent {
         <TourManager
           run={tour.run}
           steps={tour.steps}
-          show={tour.show}
+          showTour={tour.show}
           callback={this.handleTourCallback}
         />
         <NotificationManager

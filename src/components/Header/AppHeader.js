@@ -209,6 +209,24 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
         open={open}
       >
         <DrawerHeader>
+          <Button
+            onClick={(event) => {
+              onNavigate(event, 'Home');
+              handleDrawerClose();
+            }}
+            sx={{
+              marginRight: 'auto',
+              textTransform: 'none',
+              color: 'inherit',
+              fontSize: '1rem',
+              padding: '8px 16px',
+              minHeight: '48px',
+              justifyContent: 'flex-start',
+            }}
+            startIcon={<HomeIcon sx={{ fontSize: '1.25rem' }} />}
+          >
+            Home
+          </Button>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'ltr' ? (
               <ChevronLeftIcon />
@@ -217,22 +235,6 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
             )}
           </IconButton>
         </DrawerHeader>
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={(event) => {
-                onNavigate(event, 'Home');
-                handleDrawerClose();
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: '36px' }}>
-                <HomeIcon />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItemButton>
-          </ListItem>
-        </List>
         <Divider />
         <List>
           {[
