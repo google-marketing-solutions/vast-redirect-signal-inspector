@@ -38,6 +38,9 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 import {
   getIconForText,
   getVastAdTagParameterDeprecation,
@@ -46,8 +49,6 @@ import {
   getSdkHandlingInfo,
   getVastAdTagParameterWarn,
 } from '../../utils/parameterUtils';
-
-import * as styles from './style.module.css';
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -133,9 +134,24 @@ class ParameterTable extends React.PureComponent {
     try {
       const formattedJson = JSON.stringify(ppsjValue, null, 2);
       return (
-        <div className={styles.valueContainer}>
-          <pre className={styles.jsonValueContainer}>{formattedJson}</pre>
-        </div>
+        <SyntaxHighlighter
+          language="javascript"
+          style={oneLight}
+          customStyle={{
+            margin: 0,
+            fontSize: '12px',
+            lineHeight: '1.4',
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #e1e4e8',
+            borderRadius: '4px',
+            maxHeight: '300px',
+          }}
+          showLineNumbers={false}
+          wrapLines={true}
+          wrapLongLines={true}
+        >
+          {formattedJson}
+        </SyntaxHighlighter>
       );
     } catch {
       return (
@@ -312,11 +328,24 @@ class ParameterTable extends React.PureComponent {
                         param.name === 'ppsj' ? (
                           this.formatPpsjValue(param.value)
                         ) : (
-                          <div className={styles.valueContainer}>
-                            <pre className={styles.jsonValueContainer}>
-                              {JSON.stringify(param.value, null, 2)}
-                            </pre>
-                          </div>
+                          <SyntaxHighlighter
+                            language="javascript"
+                            style={oneLight}
+                            customStyle={{
+                              margin: 0,
+                              fontSize: '12px',
+                              lineHeight: '1.4',
+                              backgroundColor: '#f8f9fa',
+                              border: '1px solid #e1e4e8',
+                              borderRadius: '4px',
+                              maxHeight: '300px',
+                            }}
+                            showLineNumbers={false}
+                            wrapLines={true}
+                            wrapLongLines={true}
+                          >
+                            {JSON.stringify(param.value, null, 2)}
+                          </SyntaxHighlighter>
                         )
                       ) : (
                         <Typography variant="body2" component="span">

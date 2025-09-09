@@ -19,17 +19,30 @@
  * @author mbordihn@google.com (Markus Bordihn)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import CodeIcon from '@mui/icons-material/Code';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { styled } from '@mui/material/styles';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const StyledTableContainer = styled('div')(({ theme }) => ({
   marginBottom: theme.spacing(3),
   boxShadow: theme.shadows[3],
   width: '100%',
   overflowX: 'auto',
+  position: 'relative', // For floating button positioning
   [theme.breakpoints.up('md')]: {
     maxWidth: '100%',
   },
@@ -38,37 +51,153 @@ const StyledTableContainer = styled('div')(({ theme }) => ({
   },
 }));
 
+const FloatingCopyButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(1),
+  right: theme.spacing(3), // More space from right edge for scrollbar
+  zIndex: 10,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[2],
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    boxShadow: theme.shadows[4],
+  },
+  '&.copying': {
+    backgroundColor: theme.palette.success.light,
+    color: theme.palette.success.contrastText,
+  },
+}));
+
 /**
  * Component for rendering VAST Response
- * @class
+ * @param {Object} props - Component props
+ * @param {Object} props.vastResponse - VAST response handler or raw response
+ * @param {Function} props.onRefresh - Callback for refresh button
+ * @return {React.ReactNode} The component
  */
-class VastResponse extends React.PureComponent {
-  /**
-   * @param {*} props
-   * @constructor
-   */
-  constructor(props) {
-    super(props);
-  }
+const VastResponse = ({ vastResponse, onRefresh }) => {
+  const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [copySuccess, setCopySuccess] = useState(false);
 
-  /**
-   * @return {React.ReactNode}
-   * @override
-   */
-  render() {
-    const { vastResponse } = this.props;
+  // 15 seconds cooldown
+  const REFRESH_COOLDOWN_MS = 15000;
 
-    if (!vastResponse) return null;
+  // Update current time every second to refresh the UI
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
 
-    return (
-      <div
-        id="vast-response"
-        style={{ marginBottom: '20px', scrollMarginTop: '100px' }}
-        className="vast-url-parameters vast-url-parameters-vast-response"
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!vastResponse) return null;
+
+  // Check if vastResponse is a VastResponseHandler instance
+  const isHandler =
+    vastResponse && typeof vastResponse.getSummary === 'function';
+  const cacheInfo = isHandler ? vastResponse.getCacheInfo() : null;
+  const summary = isHandler ? vastResponse.getSummary() : null;
+  const formattedXml = isHandler ? vastResponse.rawXml : vastResponse;
+
+  // Determine the language for syntax highlighting
+  // Supports: xml, javascript/json, text (and many more like css, html, python, etc.)
+  const getLanguage = () => {
+    if (typeof formattedXml === 'object') {
+      return 'javascript'; // JSON objects
+    }
+
+    const content = formattedXml || '';
+
+    // Check for XML/HTML content
+    if (
+      content.includes('<?xml') ||
+      content.includes('<VAST') ||
+      content.includes('</')
+    ) {
+      return 'xml';
+    }
+
+    // Check for JavaScript/JSON content
+    if (content.includes('{') && content.includes('}')) {
+      return 'javascript';
+    }
+
+    // Default to text for plain content
+    return 'text';
+  };
+
+  // Calculate if refresh is disabled and remaining time
+  const getRefreshStatus = () => {
+    let lastActionTime = lastRefreshTime;
+
+    // Consider the fetch time from cache info (when the VAST was originally fetched)
+    if (cacheInfo && cacheInfo.fullTimestamp) {
+      const fetchTimestamp = new Date(cacheInfo.fullTimestamp).getTime();
+      lastActionTime = Math.max(lastRefreshTime, fetchTimestamp);
+    }
+
+    const timeSinceLastAction = currentTime - lastActionTime;
+    const isDisabled = timeSinceLastAction < REFRESH_COOLDOWN_MS;
+    const remainingTime = isDisabled
+      ? Math.ceil((REFRESH_COOLDOWN_MS - timeSinceLastAction) / 1000)
+      : 0;
+
+    return { isDisabled, remainingTime };
+  };
+
+  const refreshStatus = getRefreshStatus();
+  const isRefreshDisabled = refreshStatus.isDisabled;
+  const remainingSeconds = refreshStatus.remainingTime;
+
+  // Handle refresh with cooldown
+  const handleRefreshClick = () => {
+    if (isRefreshDisabled) {
+      // Don't do anything if still in cooldown
+      return;
+    }
+
+    setLastRefreshTime(Date.now());
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
+  // Handle copy to clipboard
+  const handleCopyClick = async () => {
+    try {
+      const textToCopy =
+        typeof formattedXml === 'object'
+          ? JSON.stringify(formattedXml, null, 2)
+          : formattedXml || '';
+
+      await navigator.clipboard.writeText(textToCopy);
+      setCopySuccess(true);
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setCopySuccess(false);
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
+  };
+
+  return (
+    <div
+      id="vast-response"
+      style={{ marginBottom: '20px', scrollMarginTop: '100px' }}
+      className="vast-url-parameters vast-url-parameters-vast-response"
+    >
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={1}
       >
         <Typography
           variant="h6"
-          gutterBottom
           sx={(theme) => ({
             [theme.breakpoints.down('sm')]: {
               fontSize: '1rem',
@@ -79,30 +208,244 @@ class VastResponse extends React.PureComponent {
             },
             position: 'relative',
             zIndex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
           })}
         >
+          <CodeIcon />
           VAST Response
         </Typography>
-        <StyledTableContainer component={Paper}>
-          <div style={{ padding: '16px', overflowX: 'auto' }}>
-            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {typeof vastResponse === 'object'
-                ? JSON.stringify(vastResponse, null, 2)
-                : vastResponse}
-            </pre>
-          </div>
-        </StyledTableContainer>
-      </div>
-    );
-  }
-}
+
+        <Box display="flex" alignItems="center" gap={1}>
+          {cacheInfo && (
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Chip
+                label={
+                  cacheInfo.isFromCache
+                    ? `Cached (${cacheInfo.ageDisplay})`
+                    : cacheInfo.fetchedAt
+                }
+                size="small"
+                color={cacheInfo.isFromCache ? 'info' : 'success'}
+                variant="outlined"
+                title={cacheInfo.fullTimestamp}
+              />
+            </Box>
+          )}
+          {onRefresh && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={handleRefreshClick}
+              disabled={isRefreshDisabled}
+              title={
+                isRefreshDisabled
+                  ? `Please wait ${remainingSeconds} seconds before refreshing again`
+                  : 'Refresh VAST response (bypass cache)'
+              }
+            >
+              {isRefreshDisabled ? `Wait ${remainingSeconds}s` : 'Refresh'}
+            </Button>
+          )}
+        </Box>
+      </Box>
+
+      {/* Summary information */}
+      {summary && (
+        <Box mb={2}>
+          <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+            <Typography variant="subtitle2" gutterBottom>
+              VAST Summary
+            </Typography>
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              <Chip
+                label={`Version: ${summary.version || 'Unknown'}`}
+                size="small"
+              />
+              <Chip
+                label={`Ads: ${summary.adCount}`}
+                size="small"
+                color={summary.adCount > 0 ? 'success' : 'error'}
+              />
+              <Chip
+                label={`Creatives: ${summary.creativeCount}`}
+                size="small"
+              />
+              <Chip
+                label={`Impressions: ${summary.impressionCount}`}
+                size="small"
+              />
+
+              {/* New detailed information */}
+              {summary.companionAdCount > 0 && (
+                <Chip
+                  label={`Companions: ${summary.companionAdCount}`}
+                  size="small"
+                  color="primary"
+                />
+              )}
+
+              {summary.iconCount > 0 && (
+                <Chip
+                  label={`Icons: ${summary.iconCount}`}
+                  size="small"
+                  color="secondary"
+                />
+              )}
+
+              {summary.iconPrograms?.length > 0 && (
+                <Chip
+                  label={`Programs: ${summary.iconPrograms.join(', ')}`}
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                />
+              )}
+
+              {summary.adVerificationCount > 0 && (
+                <Chip
+                  label={`Ad Verifications: ${summary.adVerificationCount}`}
+                  size="small"
+                  color="info"
+                />
+              )}
+
+              {summary.hasOMID && (
+                <Chip
+                  label="OMID"
+                  size="small"
+                  color="success"
+                  variant="filled"
+                />
+              )}
+
+              {summary.mediaFileCount > 0 && (
+                <Chip
+                  label={`Media Files: ${summary.mediaFileCount}`}
+                  size="small"
+                />
+              )}
+
+              {summary.mediaTypes?.length > 0 && (
+                <Chip
+                  label={`Types: ${summary.mediaTypes.join(', ')}`}
+                  size="small"
+                  variant="outlined"
+                />
+              )}
+
+              {summary.clickThroughCount > 0 && (
+                <Chip
+                  label={`Click Through: ${summary.clickThroughCount}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              )}
+
+              {summary.clickTrackingCount > 0 && (
+                <Chip
+                  label={`Click Tracking: ${summary.clickTrackingCount}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              )}
+
+              {summary.trackingEventTypes > 0 && (
+                <Chip
+                  label={`Event Types: ${summary.trackingEventTypes}`}
+                  size="small"
+                />
+              )}
+
+              {summary.validationErrors?.length > 0 && (
+                <Chip
+                  label={`Errors: ${summary.validationErrors.length}`}
+                  size="small"
+                  color="error"
+                />
+              )}
+              {summary.validationWarnings?.length > 0 && (
+                <Chip
+                  label={`Warnings: ${summary.validationWarnings.length}`}
+                  size="small"
+                  color="warning"
+                />
+              )}
+            </Box>
+          </Paper>
+        </Box>
+      )}
+
+      <StyledTableContainer component={Paper}>
+        <Tooltip title="Copy VAST response to clipboard">
+          <FloatingCopyButton
+            size="small"
+            onClick={handleCopyClick}
+            className={copySuccess ? 'copying' : ''}
+          >
+            <ContentCopyIcon fontSize="small" />
+          </FloatingCopyButton>
+        </Tooltip>
+        <SyntaxHighlighter
+          language={getLanguage()}
+          style={oneLight}
+          customStyle={{
+            margin: 0,
+            maxHeight: '500px',
+            fontSize: '13px',
+            lineHeight: '1.4',
+            borderRadius: '8px',
+            border: '1px solid #e1e4e8',
+          }}
+          showLineNumbers={true}
+          lineNumberStyle={{
+            minWidth: '3em',
+            paddingRight: '1em',
+            color: '#959da5',
+            borderRight: '1px solid #e1e4e8',
+            backgroundColor: '#f6f8fa',
+          }}
+          wrapLines={true}
+          wrapLongLines={true}
+        >
+          {typeof formattedXml === 'object'
+            ? JSON.stringify(formattedXml, null, 2)
+            : formattedXml || ''}
+        </SyntaxHighlighter>
+      </StyledTableContainer>
+
+      {/* Copy success feedback */}
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={3000}
+        onClose={() => setCopySuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setCopySuccess(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          VAST response copied to clipboard!
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+};
 
 VastResponse.propTypes = {
-  vastResponse: PropTypes.any,
+  vastResponse: PropTypes.object,
+  onRefresh: PropTypes.func,
 };
 
 VastResponse.defaultProps = {
   vastResponse: null,
+  onRefresh: null,
 };
 
 export default VastResponse;

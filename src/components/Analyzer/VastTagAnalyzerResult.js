@@ -29,6 +29,7 @@ class VastTagAnalyzerResult {
   constructor(url = '') {
     this._url = url;
     this._date = new Date();
+    this._vastResponse = null;
     this._parameters = {
       required: {},
       optional: {},
@@ -98,6 +99,13 @@ class VastTagAnalyzerResult {
   }
 
   /**
+   * @return {string|null}
+   */
+  get vastResponse() {
+    return this._vastResponse;
+  }
+
+  /**
    * @param {Object} parameters
    */
   set requiredParameters(parameters) {
@@ -137,6 +145,13 @@ class VastTagAnalyzerResult {
    */
   set specialParameters(parameters) {
     this._parameters.special = parameters;
+  }
+
+  /**
+   * @param {string|null} vastResponse
+   */
+  set vastResponse(vastResponse) {
+    this._vastResponse = vastResponse;
   }
 }
 

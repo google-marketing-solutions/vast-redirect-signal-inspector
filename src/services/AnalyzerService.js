@@ -15,13 +15,187 @@
  */
 
 /**
- * @fileoverview URL analyzer service for the VAST Redirect Signal Inspector.
+ * @fileoverview Handles URL validation, parsing, analysis, and VAST response fetching.
  * @author mbordihn@google.com (Markus Bordihn)
  */
 
 import VastURLValidator from '../components/Validator/VastURLValidator';
 import VastURLParser from '../components/Parser/VastURLParser';
 import VastURLAnalyzer from '../components/Analyzer/VastURLAnalyzer';
+import VastResponseHandler from './VastResponseHandler';
+import { TEST_PARAMETER } from '../constants';
+
+const vastResponseCache = new Map();
+const pendingRequests = new Map();
+const CACHE_DURATION = 30 * 1000;
+
+/**
+ * Generates a fresh correlator value for ad requests
+ * @return {string} A unique correlator value (numbers only)
+ */
+const generateCorrelator = () => {
+  // Generate a random number with 6 digits to ensure uniqueness
+  const randomSuffix = Math.floor(Math.random() * 1000000)
+    .toString()
+    .padStart(6, '0');
+  return Date.now().toString() + randomSuffix;
+};
+
+/**
+ * Normalizes a URL for caching by removing dynamic parameters
+ * @param {string} url - The original URL
+ * @return {string} Normalized URL for caching
+ */
+const getCacheKey = (url) => {
+  const urlObj = new URL(url);
+  // Remove dynamic parameters that shouldn't affect caching
+  urlObj.searchParams.delete('correlator');
+  urlObj.searchParams.delete('_');
+  urlObj.searchParams.delete('timestamp');
+  return urlObj.toString();
+};
+
+/**
+ * Checks if cached response is still valid
+ * @param {Object} cacheEntry - Cache entry with timestamp and data
+ * @return {boolean} True if cache is still valid
+ */
+const isCacheValid = (cacheEntry) => {
+  return cacheEntry && Date.now() - cacheEntry.timestamp < CACHE_DURATION;
+};
+
+/**
+ * Checks if we should block new requests due to recent activity (10 second cooldown)
+ * @param {Object} cacheEntry - Cache entry with timestamp and data
+ * @return {boolean} True if still in cooldown period
+ */
+const isInCooldownPeriod = (cacheEntry) => {
+  const COOLDOWN_DURATION = 15 * 1000; // 15 seconds
+  return cacheEntry && Date.now() - cacheEntry.timestamp < COOLDOWN_DURATION;
+};
+
+/**
+ * Fetches the VAST response from a validated Google Ad Manager URL.
+ * @param {string} url - The URL to fetch the VAST response from
+ * @param {boolean} forceRefresh - Force refresh bypassing cache
+ * @return {Promise<VastResponseHandler|null>} The VAST response handler or null if failed
+ */
+const fetchVastResponse = async (url, forceRefresh = false) => {
+  const cacheKey = getCacheKey(url);
+
+  // Check cache first (unless force refresh is requested)
+  if (!forceRefresh) {
+    const cachedResponse = vastResponseCache.get(cacheKey);
+    if (isCacheValid(cachedResponse)) {
+      console.log('Returning cached VAST response for:', cacheKey);
+      const cachedHandler = new VastResponseHandler(
+        cachedResponse.data,
+        true,
+        cachedResponse.timestamp,
+      );
+      return cachedHandler;
+    }
+  } else {
+    console.log('Force refresh requested, bypassing cache for:', cacheKey);
+  }
+
+  // Check if there's already a pending request for this URL
+  if (pendingRequests.has(cacheKey)) {
+    console.log('Waiting for pending VAST request for:', cacheKey);
+    return pendingRequests.get(cacheKey);
+  }
+
+  // Create the actual fetch promise
+  const fetchPromise = (async () => {
+    try {
+      // Prepare URL with test parameters and fresh correlator
+      const urlObj = new URL(url);
+      urlObj.searchParams.set(TEST_PARAMETER.NAME, TEST_PARAMETER.VALUE);
+      urlObj.searchParams.set('correlator', generateCorrelator());
+      const testUrl = urlObj.toString();
+      console.log(
+        'Fetching fresh VAST response from Google Ad Manager URL:',
+        testUrl,
+      );
+
+      // Fetch the VAST response
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/xml, text/xml, */*',
+        },
+        mode: 'cors',
+      });
+
+      if (!response.ok) {
+        console.warn(
+          'Failed to fetch VAST response:',
+          response.status,
+          response.statusText,
+        );
+        return null;
+      }
+
+      const vastXml = await response.text();
+      console.log('Successfully fetched VAST response');
+
+      const timestamp = Date.now();
+
+      // Create VastResponseHandler with cache info
+      const vastResponseHandler = new VastResponseHandler(
+        vastXml,
+        false,
+        timestamp,
+      );
+
+      // Cache the response with metadata
+      const cacheEntry = {
+        data: vastXml,
+        timestamp,
+        handler: vastResponseHandler,
+      };
+      vastResponseCache.set(cacheKey, cacheEntry);
+      return vastResponseHandler;
+    } catch (error) {
+      console.error('Error fetching VAST response:', error);
+      return null;
+    } finally {
+      pendingRequests.delete(cacheKey);
+    }
+  })();
+
+  // Store the promise to prevent duplicate requests
+  pendingRequests.set(cacheKey, fetchPromise);
+
+  return fetchPromise;
+};
+
+/**
+ * Clears the VAST response cache
+ */
+export const clearVastResponseCache = () => {
+  vastResponseCache.clear();
+  pendingRequests.clear();
+  console.log('VAST response cache cleared');
+};
+
+/**
+ * Gets cache statistics for debugging
+ * @return {Object} Cache statistics
+ */
+export const getCacheStats = () => {
+  const now = Date.now();
+  const validEntries = Array.from(vastResponseCache.values()).filter(
+    (entry) => now - entry.timestamp < CACHE_DURATION,
+  );
+
+  return {
+    totalEntries: vastResponseCache.size,
+    validEntries: validEntries.length,
+    pendingRequests: pendingRequests.size,
+    cacheDurationMs: CACHE_DURATION,
+  };
+};
 
 /**
  * Validates a VAST URL for correctness and tag type detection.
@@ -38,9 +212,15 @@ export const validateUrl = (url) => {
  * @param {string} url - The URL to analyze
  * @param {string} tagType - The selected tag type for analysis
  * @param {string} implementationType - The selected implementation type (web, mobile, etc.)
+ * @param {boolean} forceRefresh - Force refresh VAST response bypassing cache
  * @return {Promise<Object>} Analysis result with parameters and validation scores
  */
-export const analyzeUrl = async (url, tagType, implementationType) => {
+export const analyzeUrl = async (
+  url,
+  tagType,
+  implementationType,
+  forceRefresh = false,
+) => {
   const result = {
     success: false,
     error: null,
@@ -71,30 +251,31 @@ export const analyzeUrl = async (url, tagType, implementationType) => {
     return result;
   }
 
+  // Fetch VAST response
+  try {
+    const cacheKey = getCacheKey(url);
+    const cachedResponse = vastResponseCache.get(cacheKey);
+    const shouldRespectCooldown =
+      !forceRefresh && isInCooldownPeriod(cachedResponse);
+    const finalForceRefresh = forceRefresh && !shouldRespectCooldown;
+    const vastResponseHandler = await fetchVastResponse(url, finalForceRefresh);
+    if (vastResponseHandler) {
+      analyzerResult.analysisResult.vastResponse = vastResponseHandler;
+    }
+  } catch (error) {
+    console.warn('Failed to fetch VAST response:', error);
+  }
+
   result.analysisResult = analyzerResult.analysisResult;
   result.success = true;
   return result;
 };
 
-export const handleNavigation = (key) => {
-  switch (key) {
-    case 'Home':
-      window.location.href = '/vast-redirect-signal-inspector/';
-      break;
-    case 'Source':
-      window.open(
-        'https://github.com/google-marketing-solutions/vast-redirect-signal-inspector',
-      );
-      break;
-    case 'Issues':
-      window.open(
-        'https://github.com/google-marketing-solutions/vast-redirect-signal-inspector/issues',
-      );
-      break;
-    case 'Help':
-      window.open('https://support.google.com/admanager/answer/10678356');
-      break;
-    default:
-      break;
-  }
-};
+// Expose cache functions to window for debugging
+if (typeof window !== 'undefined') {
+  window.vastResponseCache = {
+    clear: clearVastResponseCache,
+    stats: getCacheStats,
+    getAll: () => Array.from(vastResponseCache.entries()),
+  };
+}

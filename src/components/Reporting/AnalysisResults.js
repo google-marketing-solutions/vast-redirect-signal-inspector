@@ -38,6 +38,7 @@ const AnalysisResults = ({
   implementationType,
   showDebug,
   onShareClick,
+  onRefreshVast,
 }) => {
   if (!analysisResult || Object.keys(analysisResult).length === 0) {
     return null;
@@ -67,7 +68,11 @@ const AnalysisResults = ({
         </Box>
       </Box>
 
-      <VastURLParameters data={analysisResult} showDebug={showDebug} />
+      <VastURLParameters
+        data={analysisResult}
+        showDebug={showDebug}
+        onRefreshVast={onRefreshVast}
+      />
     </Box>
   );
 };
@@ -79,6 +84,7 @@ AnalysisResults.propTypes = {
   implementationType: PropTypes.string.isRequired,
   showDebug: PropTypes.bool,
   onShareClick: PropTypes.func.isRequired,
+  onRefreshVast: PropTypes.func,
 };
 
 AnalysisResults.defaultProps = {

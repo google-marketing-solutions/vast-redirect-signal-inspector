@@ -34,11 +34,8 @@ import {
   EXAMPLE_VAST_URLS,
 } from '../../constants';
 import { decodeState } from '../../utils/encoder';
-import {
-  validateUrl,
-  analyzeUrl,
-  handleNavigation,
-} from '../../services/AnalyzerService';
+import { validateUrl, analyzeUrl } from '../../services/AnalyzerService';
+import { handleNavigation } from '../../services/NavigationService';
 
 import AppHeader from '../Header/AppHeader';
 import URLInputForm from '../Form/URLInputForm';
@@ -78,6 +75,7 @@ class App extends React.PureComponent {
       showInputControls: true,
     };
     this.handleAnalyzeClick = this.handleAnalyzeClick.bind(this);
+    this.handleRefreshVast = this.handleRefreshVast.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.validateUrl = this.validateUrl.bind(this);
     this.handleTagTypeChange = this.handleTagTypeChange.bind(this);
@@ -220,6 +218,14 @@ class App extends React.PureComponent {
     });
   }
 
+  /**
+   * Handles refreshing VAST response by bypassing cache.
+   * @return {Promise<void>}
+   */
+  async handleRefreshVast() {
+    await this.analysisResult(true); // Force refresh
+  }
+
   toggleInputControls() {
     this.setState((prevState) => ({
       showInputControls: !prevState.showInputControls,
@@ -228,9 +234,10 @@ class App extends React.PureComponent {
 
   /**
    * Analyzes the current VAST URL and updates analysis results.
+   * @param {boolean} forceRefresh - Whether to bypass cache for VAST response
    * @return {Promise<void>}
    */
-  async analysisResult() {
+  async analysisResult(forceRefresh = false) {
     const { vastRedirectURL, vastTagType, implementationType } = this.state;
 
     try {
@@ -240,6 +247,7 @@ class App extends React.PureComponent {
         vastRedirectURL,
         vastTagType,
         implementationType,
+        forceRefresh,
       );
 
       this.setState({
@@ -514,6 +522,7 @@ class App extends React.PureComponent {
               implementationType={implementationType}
               showDebug={showDebug}
               onShareClick={() => this.setState({ showShareSnackbar: true })}
+              onRefreshVast={this.handleRefreshVast}
             />
           </Container>
         </Box>

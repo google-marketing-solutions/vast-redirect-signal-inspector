@@ -42,7 +42,7 @@ class VastURLParameters extends React.PureComponent {
    * @override
    */
   render() {
-    const { data, showDebug } = this.props;
+    const { data, showDebug, onRefreshVast } = this.props;
     const analysisResult = data || {};
 
     return (
@@ -67,7 +67,10 @@ class VastURLParameters extends React.PureComponent {
           title="Other Parameters"
           showDebug={showDebug}
         />
-        <VastResponse vastResponse={analysisResult.vastResponse} />
+        <VastResponse
+          vastResponse={analysisResult.vastResponse}
+          onRefresh={onRefreshVast}
+        />
       </div>
     );
   }
@@ -76,6 +79,7 @@ class VastURLParameters extends React.PureComponent {
 VastURLParameters.propTypes = {
   data: PropTypes.object,
   showDebug: PropTypes.bool,
+  onRefreshVast: PropTypes.func,
 };
 
 VastURLParameters.defaultProps = {
