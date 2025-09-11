@@ -16,7 +16,6 @@
     "programmatic": {
       "required": ["ott_placement", "plcmt", "vpa", "vpmute"],
       "recommended": [
-        "aconp",
         "dth",
         "givn",
         "hl",

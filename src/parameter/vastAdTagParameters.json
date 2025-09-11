@@ -214,9 +214,10 @@
     "examples": [
       "com.package.publisher",
       "com.publisher.deviceplatform",
-      "com.tubitv"
+      "com.publisher123.deviceplatform",
+      "com.exampletv"
     ],
-    "validation": "^[a-z]{2,3}\\.[a-z]+(\\.[a-z]+)?$",
+    "validation": "^[a-z]{2,3}\\.[a-z0-9]+(\\.[a-z]+)?$",
     "help": "https://support.google.com/admanager/answer/10678356?hl=en#hl&zippy=%2Cmsid-app-id"
   },
   {

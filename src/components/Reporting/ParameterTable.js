@@ -105,7 +105,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 /**
- * Component for rendering parameter tables
  * @class
  */
 class ParameterTable extends React.PureComponent {
@@ -118,7 +117,6 @@ class ParameterTable extends React.PureComponent {
   }
 
   /**
-   * Helper function to format PPSJ values
    * @param {*} ppsjValue
    * @return {React.ReactNode}
    */
@@ -171,7 +169,6 @@ class ParameterTable extends React.PureComponent {
 
     if (!params) return null;
 
-    // Create an ID from the title for navigation scrolling
     const sectionId = title.toLowerCase().replace(/\s+/g, '-');
 
     return (
@@ -269,6 +266,12 @@ class ParameterTable extends React.PureComponent {
                                 style={{ color: 'orange' }}
                               />
                             </Tooltip>
+                          ) : param.warning ? (
+                            <Tooltip title={`Warning: ${param.warning}`}>
+                              <CheckCircleOutlineIcon
+                                style={{ color: 'orange' }}
+                              />
+                            </Tooltip>
                           ) : (
                             <Tooltip title="Valid">
                               <CheckCircleOutlineIcon
@@ -276,11 +279,19 @@ class ParameterTable extends React.PureComponent {
                               />
                             </Tooltip>
                           )
+                        ) : param.warning ? (
+                          <Tooltip title={`Warning: ${param.warning}`}>
+                            <WarningAmberIcon style={{ color: 'orange' }} />
+                          </Tooltip>
                         ) : (
                           <Tooltip title="Warning: Invalid">
                             <WarningAmberIcon style={{ color: 'orange' }} />
                           </Tooltip>
                         )
+                      ) : param.override && param.name === 'ip' ? (
+                        <Tooltip title="IP address passed via HTTP header (not as URL parameter)">
+                          <CheckCircleOutlineIcon style={{ color: 'green' }} />
+                        </Tooltip>
                       ) : (
                         <Tooltip title="Missing">
                           <ErrorOutlineIcon style={{ color: 'red' }} />
@@ -324,7 +335,15 @@ class ParameterTable extends React.PureComponent {
                     </StyledTableCell>
 
                     <StyledTableCell className="value-cell">
-                      {param.value && typeof param.value === 'object' ? (
+                      {param.override && param.name === 'ip' ? (
+                        <Typography
+                          variant="body2"
+                          component="span"
+                          style={{ color: 'green', fontStyle: 'italic' }}
+                        >
+                          Passed via HTTP header
+                        </Typography>
+                      ) : param.value && typeof param.value === 'object' ? (
                         param.name === 'ppsj' ? (
                           this.formatPpsjValue(param.value)
                         ) : (

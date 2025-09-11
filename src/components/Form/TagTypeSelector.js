@@ -23,6 +23,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import Radio from '@mui/material/Radio';
@@ -45,6 +46,7 @@ const TagTypeSelector = ({
   exampleUrls,
   onTagTypeChange,
   onExampleClick,
+  additionalOptions,
 }) => {
   return (
     <Box className={styles.formControl}>
@@ -104,6 +106,13 @@ const TagTypeSelector = ({
             Load Example
           </Button>
         </Box>
+
+        {additionalOptions && (
+          <>
+            <Divider sx={{ my: 2 }} />
+            <Box sx={{ px: 2 }}>{additionalOptions}</Box>
+          </>
+        )}
       </FormControl>
     </Box>
   );
@@ -118,11 +127,13 @@ TagTypeSelector.propTypes = {
   exampleUrls: PropTypes.object.isRequired,
   onTagTypeChange: PropTypes.func.isRequired,
   onExampleClick: PropTypes.func.isRequired,
+  additionalOptions: PropTypes.node,
 };
 
 TagTypeSelector.defaultProps = {
   showWarning: false,
   detectedTagType: '',
+  additionalOptions: null,
 };
 
 export default TagTypeSelector;

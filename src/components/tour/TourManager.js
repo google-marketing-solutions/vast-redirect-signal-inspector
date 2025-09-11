@@ -26,10 +26,14 @@ import PropTypes from 'prop-types';
 const Joyride = React.lazy(() => import('react-joyride'));
 
 /**
- * Manages the guided tour using lazily loaded react-joyride
- * @return {JSX.Element} The TourManager component
+ * @return {JSX.Element}
  */
 const TourManager = ({ run, steps, callback, showTour }) => {
+  // Check for global tour disable flag (useful for tests)
+  if (typeof window !== 'undefined' && window.__disableTour) {
+    return null;
+  }
+
   if (!showTour) {
     return null;
   }

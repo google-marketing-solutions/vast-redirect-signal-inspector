@@ -20,7 +20,6 @@
  */
 
 /**
- * Handles navigation to different sections and external links.
  * @param {string} key - The navigation key
  */
 export const handleNavigation = (key) => {

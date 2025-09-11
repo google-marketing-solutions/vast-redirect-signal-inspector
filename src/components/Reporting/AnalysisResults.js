@@ -28,7 +28,6 @@ import ShareButton from '../Button/ShareButton';
 import * as styles from './style.module.css';
 
 /**
- * Displays the analysis results including scores and parameters
  * @return {JSX.Element|null} The AnalysisResults component or null if no results
  */
 const AnalysisResults = ({

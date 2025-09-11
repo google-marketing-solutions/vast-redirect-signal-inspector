@@ -24,6 +24,8 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import * as styles from './style.module.css';
@@ -59,6 +61,7 @@ class App extends React.PureComponent {
       analysisResult: null,
       showShareSnackbar: false,
       showDebug: false,
+      ipViaHttpHeader: false,
       error: {
         present: false,
         message: '',
@@ -81,6 +84,8 @@ class App extends React.PureComponent {
     this.handleTagTypeChange = this.handleTagTypeChange.bind(this);
     this.handleImplementationTypeChange =
       this.handleImplementationTypeChange.bind(this);
+    this.handleIpViaHttpHeaderChange =
+      this.handleIpViaHttpHeaderChange.bind(this);
     this.handleToolbarClick = this.handleToolbarClick.bind(this);
     this.handleExampleClick = this.handleExampleClick.bind(this);
     this.handleTourCallback = this.handleTourCallback.bind(this);
@@ -129,7 +134,10 @@ class App extends React.PureComponent {
     }
 
     // Joyride Setup
-    if (!localStorage.getItem(TOUR_KEY)) {
+    if (
+      !localStorage.getItem(TOUR_KEY) &&
+      !(typeof window !== 'undefined' && window.__disableTour)
+    ) {
       this.handleStartTour();
     }
   }
@@ -153,11 +161,16 @@ class App extends React.PureComponent {
           details: null,
         },
         detectedVastTagType: TAG_TYPE.UNKNOWN,
+        ipViaHttpHeader: false, // Reset IP header option for empty URLs
       });
       return;
     }
 
     const validationResult = validateUrl(url);
+    const isPaiTag =
+      validationResult.tagType === TAG_TYPE.PAI ||
+      validationResult.tagType === TAG_TYPE.PAI_PAL;
+
     this.setState({
       error: {
         present: !validationResult.success,
@@ -171,6 +184,8 @@ class App extends React.PureComponent {
       },
       detectedVastTagType: validationResult.tagType,
       vastTagType: validationResult.tagType,
+      // Reset IP header option when switching away from PAI tags automatically
+      ipViaHttpHeader: isPaiTag ? this.state.ipViaHttpHeader : false,
     });
   }
 
@@ -188,10 +203,16 @@ class App extends React.PureComponent {
   }
 
   handleTagTypeChange(event) {
+    const newTagType = event.target.value;
+    const isPaiTag =
+      newTagType === TAG_TYPE.PAI || newTagType === TAG_TYPE.PAI_PAL;
+
     this.setState(
       {
-        vastTagType: event.target.value,
+        vastTagType: newTagType,
         isAnalyzeButtonDisabled: false,
+        // Reset IP header option when switching away from PAI tags
+        ipViaHttpHeader: isPaiTag ? this.state.ipViaHttpHeader : false,
       },
       () => {
         this.analysisResult();
@@ -210,6 +231,20 @@ class App extends React.PureComponent {
     );
   }
 
+  handleIpViaHttpHeaderChange(event) {
+    this.setState(
+      {
+        ipViaHttpHeader: event.target.checked,
+      },
+      () => {
+        // Re-run analysis if we have results already
+        if (this.state.analysisResult) {
+          this.analysisResult();
+        }
+      },
+    );
+  }
+
   handleAnalyzeClick(event) {
     event.preventDefault();
 
@@ -219,7 +254,6 @@ class App extends React.PureComponent {
   }
 
   /**
-   * Handles refreshing VAST response by bypassing cache.
    * @return {Promise<void>}
    */
   async handleRefreshVast() {
@@ -238,7 +272,12 @@ class App extends React.PureComponent {
    * @return {Promise<void>}
    */
   async analysisResult(forceRefresh = false) {
-    const { vastRedirectURL, vastTagType, implementationType } = this.state;
+    const {
+      vastRedirectURL,
+      vastTagType,
+      implementationType,
+      ipViaHttpHeader,
+    } = this.state;
 
     try {
       this.setState({ isLoading: true });
@@ -248,6 +287,7 @@ class App extends React.PureComponent {
         vastTagType,
         implementationType,
         forceRefresh,
+        { ipViaHttpHeader },
       );
 
       this.setState({
@@ -278,7 +318,6 @@ class App extends React.PureComponent {
   }
 
   /**
-   * Handles navigation toolbar clicks.
    * @param {Event} event - The click event
    * @param {string} key - The navigation key
    */
@@ -304,7 +343,6 @@ class App extends React.PureComponent {
   }
 
   /**
-   * Handles tour state changes and special tour logic.
    * @param {Object} data - The Joyride event data
    */
   handleTourCallback(data) {
@@ -409,6 +447,7 @@ class App extends React.PureComponent {
       vastTagType,
       detectedVastTagType,
       implementationType,
+      ipViaHttpHeader,
       error,
       warning,
       showDebug,
@@ -505,6 +544,22 @@ class App extends React.PureComponent {
                   exampleUrls={EXAMPLE_VAST_URLS}
                   onTagTypeChange={this.handleTagTypeChange}
                   onExampleClick={this.handleExampleClick}
+                  additionalOptions={
+                    (vastTagType === TAG_TYPE.PAI ||
+                      vastTagType === TAG_TYPE.PAI_PAL) && (
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={ipViaHttpHeader}
+                            onChange={this.handleIpViaHttpHeaderChange}
+                            name="ipViaHttpHeader"
+                            color="primary"
+                          />
+                        }
+                        label="IP address is passed via HTTP header (not as URL parameter)"
+                      />
+                    )
+                  }
                 />
 
                 <ImplementationTypeSelector

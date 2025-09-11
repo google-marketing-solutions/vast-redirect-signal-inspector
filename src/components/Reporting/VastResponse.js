@@ -42,7 +42,7 @@ const StyledTableContainer = styled('div')(({ theme }) => ({
   boxShadow: theme.shadows[3],
   width: '100%',
   overflowX: 'auto',
-  position: 'relative', // For floating button positioning
+  position: 'relative',
   [theme.breakpoints.up('md')]: {
     maxWidth: '100%',
   },
@@ -54,7 +54,7 @@ const StyledTableContainer = styled('div')(({ theme }) => ({
 const FloatingCopyButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
   top: theme.spacing(1),
-  right: theme.spacing(3), // More space from right edge for scrollbar
+  right: theme.spacing(3),
   zIndex: 10,
   backgroundColor: theme.palette.background.paper,
   boxShadow: theme.shadows[2],
@@ -69,7 +69,6 @@ const FloatingCopyButton = styled(IconButton)(({ theme }) => ({
 }));
 
 /**
- * Component for rendering VAST Response
  * @param {Object} props - Component props
  * @param {Object} props.vastResponse - VAST response handler or raw response
  * @param {Function} props.onRefresh - Callback for refresh button
@@ -79,11 +78,8 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [copySuccess, setCopySuccess] = useState(false);
-
-  // 15 seconds cooldown
   const REFRESH_COOLDOWN_MS = 15000;
 
-  // Update current time every second to refresh the UI
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
@@ -94,23 +90,19 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
 
   if (!vastResponse) return null;
 
-  // Check if vastResponse is a VastResponseHandler instance
   const isHandler =
     vastResponse && typeof vastResponse.getSummary === 'function';
   const cacheInfo = isHandler ? vastResponse.getCacheInfo() : null;
   const summary = isHandler ? vastResponse.getSummary() : null;
   const formattedXml = isHandler ? vastResponse.rawXml : vastResponse;
 
-  // Determine the language for syntax highlighting
-  // Supports: xml, javascript/json, text (and many more like css, html, python, etc.)
   const getLanguage = () => {
     if (typeof formattedXml === 'object') {
-      return 'javascript'; // JSON objects
+      return 'javascript';
     }
 
     const content = formattedXml || '';
 
-    // Check for XML/HTML content
     if (
       content.includes('<?xml') ||
       content.includes('<VAST') ||
@@ -119,29 +111,32 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
       return 'xml';
     }
 
-    // Check for JavaScript/JSON content
     if (content.includes('{') && content.includes('}')) {
       return 'javascript';
     }
 
-    // Default to text for plain content
     return 'text';
   };
 
-  // Calculate if refresh is disabled and remaining time
   const getRefreshStatus = () => {
-    let lastActionTime = lastRefreshTime;
+    let referenceTime = 0;
 
-    // Consider the fetch time from cache info (when the VAST was originally fetched)
-    if (cacheInfo && cacheInfo.fullTimestamp) {
-      const fetchTimestamp = new Date(cacheInfo.fullTimestamp).getTime();
-      lastActionTime = Math.max(lastRefreshTime, fetchTimestamp);
+    if (isHandler && vastResponse.cacheTimestamp) {
+      referenceTime = vastResponse.cacheTimestamp;
+    } else if (lastRefreshTime > 0) {
+      referenceTime = lastRefreshTime;
     }
 
-    const timeSinceLastAction = currentTime - lastActionTime;
-    const isDisabled = timeSinceLastAction < REFRESH_COOLDOWN_MS;
+    const timeSinceReference = currentTime - referenceTime;
+
+    if (referenceTime > 0 && timeSinceReference >= REFRESH_COOLDOWN_MS) {
+      return { isDisabled: false, remainingTime: 0 };
+    }
+
+    const isDisabled =
+      referenceTime > 0 && timeSinceReference < REFRESH_COOLDOWN_MS;
     const remainingTime = isDisabled
-      ? Math.ceil((REFRESH_COOLDOWN_MS - timeSinceLastAction) / 1000)
+      ? Math.ceil((REFRESH_COOLDOWN_MS - timeSinceReference) / 1000)
       : 0;
 
     return { isDisabled, remainingTime };
@@ -151,10 +146,8 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
   const isRefreshDisabled = refreshStatus.isDisabled;
   const remainingSeconds = refreshStatus.remainingTime;
 
-  // Handle refresh with cooldown
   const handleRefreshClick = () => {
     if (isRefreshDisabled) {
-      // Don't do anything if still in cooldown
       return;
     }
 
@@ -164,7 +157,6 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
     }
   };
 
-  // Handle copy to clipboard
   const handleCopyClick = async () => {
     try {
       const textToCopy =
@@ -175,13 +167,17 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
       await navigator.clipboard.writeText(textToCopy);
       setCopySuccess(true);
 
-      // Hide success message after 3 seconds
       setTimeout(() => {
         setCopySuccess(false);
       }, 3000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
+  };
+
+  const renderChip = (condition, label, props = {}) => {
+    if (!condition) return null;
+    return <Chip label={label} size="small" {...props} />;
   };
 
   return (
@@ -243,7 +239,7 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
               title={
                 isRefreshDisabled
                   ? `Please wait ${remainingSeconds} seconds before refreshing again`
-                  : 'Refresh VAST response (bypass cache)'
+                  : 'Refresh VAST response (bypass cache) - 15 second cooldown from cache creation'
               }
             >
               {isRefreshDisabled ? `Wait ${remainingSeconds}s` : 'Refresh'}
@@ -252,7 +248,6 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
         </Box>
       </Box>
 
-      {/* Summary information */}
       {summary && (
         <Box mb={2}>
           <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
@@ -278,102 +273,62 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
                 size="small"
               />
 
-              {/* New detailed information */}
-              {summary.companionAdCount > 0 && (
-                <Chip
-                  label={`Companions: ${summary.companionAdCount}`}
-                  size="small"
-                  color="primary"
-                />
+              {renderChip(
+                summary.companionAdCount > 0,
+                `Companions: ${summary.companionAdCount}`,
+                { color: 'primary' },
               )}
-
-              {summary.iconCount > 0 && (
-                <Chip
-                  label={`Icons: ${summary.iconCount}`}
-                  size="small"
-                  color="secondary"
-                />
+              {renderChip(
+                summary.iconCount > 0,
+                `Icons: ${summary.iconCount}`,
+                { color: 'secondary' },
               )}
-
-              {summary.iconPrograms?.length > 0 && (
-                <Chip
-                  label={`Programs: ${summary.iconPrograms.join(', ')}`}
-                  size="small"
-                  color="secondary"
-                  variant="outlined"
-                />
+              {renderChip(
+                summary.iconPrograms?.length > 0,
+                `Programs: ${summary.iconPrograms.join(', ')}`,
+                { color: 'secondary', variant: 'outlined' },
               )}
-
-              {summary.adVerificationCount > 0 && (
-                <Chip
-                  label={`Ad Verifications: ${summary.adVerificationCount}`}
-                  size="small"
-                  color="info"
-                />
+              {renderChip(
+                summary.adVerificationCount > 0,
+                `Ad Verifications: ${summary.adVerificationCount}`,
+                { color: 'info' },
               )}
-
-              {summary.hasOMID && (
-                <Chip
-                  label="OMID"
-                  size="small"
-                  color="success"
-                  variant="filled"
-                />
+              {renderChip(summary.hasOMID, 'OMID', {
+                color: 'success',
+                variant: 'filled',
+              })}
+              {renderChip(
+                summary.mediaFileCount > 0,
+                `Media Files: ${summary.mediaFileCount}`,
               )}
-
-              {summary.mediaFileCount > 0 && (
-                <Chip
-                  label={`Media Files: ${summary.mediaFileCount}`}
-                  size="small"
-                />
+              {renderChip(
+                summary.mediaTypes?.length > 0,
+                `Types: ${summary.mediaTypes.join(', ')}`,
+                { variant: 'outlined' },
               )}
-
-              {summary.mediaTypes?.length > 0 && (
-                <Chip
-                  label={`Types: ${summary.mediaTypes.join(', ')}`}
-                  size="small"
-                  variant="outlined"
-                />
+              {renderChip(
+                summary.clickThroughCount > 0,
+                `Click Through: ${summary.clickThroughCount}`,
+                { color: 'primary', variant: 'outlined' },
               )}
-
-              {summary.clickThroughCount > 0 && (
-                <Chip
-                  label={`Click Through: ${summary.clickThroughCount}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
+              {renderChip(
+                summary.clickTrackingCount > 0,
+                `Click Tracking: ${summary.clickTrackingCount}`,
+                { color: 'primary', variant: 'outlined' },
               )}
-
-              {summary.clickTrackingCount > 0 && (
-                <Chip
-                  label={`Click Tracking: ${summary.clickTrackingCount}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
+              {renderChip(
+                summary.trackingEventTypes > 0,
+                `Event Types: ${summary.trackingEventTypes}`,
               )}
-
-              {summary.trackingEventTypes > 0 && (
-                <Chip
-                  label={`Event Types: ${summary.trackingEventTypes}`}
-                  size="small"
-                />
+              {renderChip(
+                summary.validationErrors?.length > 0,
+                `Errors: ${summary.validationErrors.length}`,
+                { color: 'error' },
               )}
-
-              {summary.validationErrors?.length > 0 && (
-                <Chip
-                  label={`Errors: ${summary.validationErrors.length}`}
-                  size="small"
-                  color="error"
-                />
-              )}
-              {summary.validationWarnings?.length > 0 && (
-                <Chip
-                  label={`Warnings: ${summary.validationWarnings.length}`}
-                  size="small"
-                  color="warning"
-                />
+              {renderChip(
+                summary.validationWarnings?.length > 0,
+                `Warnings: ${summary.validationWarnings.length}`,
+                { color: 'warning' },
               )}
             </Box>
           </Paper>
@@ -418,7 +373,6 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
         </SyntaxHighlighter>
       </StyledTableContainer>
 
-      {/* Copy success feedback */}
       <Snackbar
         open={copySuccess}
         autoHideDuration={3000}

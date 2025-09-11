@@ -25,7 +25,6 @@ import ParameterTable from './ParameterTable';
 import VastResponse from './VastResponse';
 
 /**
- * Component for rendering VAST URL parameter analysis
  * @class
  */
 class VastURLParameters extends React.PureComponent {

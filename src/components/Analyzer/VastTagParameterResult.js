@@ -39,6 +39,7 @@ class VastTagParameterResult {
     this._sdkManaged = false;
     this._deprecated = '';
     this._alias = '';
+    this._warning = '';
   }
 
   /**
@@ -56,7 +57,7 @@ class VastTagParameterResult {
   }
 
   /**
-   * @param {string} value
+   * @return {number}
    */
   get score() {
     return this._score;
@@ -165,6 +166,20 @@ class VastTagParameterResult {
    */
   set alias(alias) {
     this._alias = alias;
+  }
+
+  /**
+   * @return {string}
+   */
+  get warning() {
+    return this._warning;
+  }
+
+  /**
+   * @param {string} warning
+   */
+  set warning(warning) {
+    this._warning = warning;
   }
 }
 

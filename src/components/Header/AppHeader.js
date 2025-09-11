@@ -45,7 +45,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import CodeIcon from '@mui/icons-material/Code';
 import HelpIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
 import TourIcon from '@mui/icons-material/Tour';
 import LockIcon from '@mui/icons-material/Lock';
 import ApiIcon from '@mui/icons-material/Api';
@@ -74,7 +73,6 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
     { name: 'Issues', icon: <BugReportIcon /> },
     { name: 'Tour', icon: <TourIcon /> },
     { name: 'Help', icon: <HelpIcon /> },
-    { name: 'About', icon: <InfoIcon /> },
   ];
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();

@@ -343,7 +343,6 @@ class VastResponseHandler {
   }
 
   /**
-   * Gets cache information for display
    * @return {Object|null} Cache info or null if not from cache
    */
   getCacheInfo() {
@@ -371,7 +370,6 @@ class VastResponseHandler {
   }
 
   /**
-   * Gets summary statistics about the VAST response
    * @return {Object} Summary statistics
    */
   getSummary() {

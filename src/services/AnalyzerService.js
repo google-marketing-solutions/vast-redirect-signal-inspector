@@ -27,26 +27,16 @@ import { TEST_PARAMETER } from '../constants';
 
 const vastResponseCache = new Map();
 const pendingRequests = new Map();
-const CACHE_DURATION = 30 * 1000;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-/**
- * Generates a fresh correlator value for ad requests
- * @return {string} A unique correlator value (numbers only)
- */
 const generateCorrelator = () => {
-  // Generate a random number with 6 digits to ensure uniqueness
   const randomSuffix = Math.floor(Math.random() * 1000000)
     .toString()
     .padStart(6, '0');
   return Date.now().toString() + randomSuffix;
 };
 
-/**
- * Normalizes a URL for caching by removing dynamic parameters
- * @param {string} url - The original URL
- * @return {string} Normalized URL for caching
- */
-const getCacheKey = (url) => {
+const normalizeUrlForCaching = (url) => {
   const urlObj = new URL(url);
   // Remove dynamic parameters that shouldn't affect caching
   urlObj.searchParams.delete('correlator');
@@ -55,35 +45,23 @@ const getCacheKey = (url) => {
   return urlObj.toString();
 };
 
-/**
- * Checks if cached response is still valid
- * @param {Object} cacheEntry - Cache entry with timestamp and data
- * @return {boolean} True if cache is still valid
- */
 const isCacheValid = (cacheEntry) => {
   return cacheEntry && Date.now() - cacheEntry.timestamp < CACHE_DURATION;
 };
 
-/**
- * Checks if we should block new requests due to recent activity (10 second cooldown)
- * @param {Object} cacheEntry - Cache entry with timestamp and data
- * @return {boolean} True if still in cooldown period
- */
 const isInCooldownPeriod = (cacheEntry) => {
-  const COOLDOWN_DURATION = 15 * 1000; // 15 seconds
+  const COOLDOWN_DURATION = 15 * 1000;
   return cacheEntry && Date.now() - cacheEntry.timestamp < COOLDOWN_DURATION;
 };
 
 /**
- * Fetches the VAST response from a validated Google Ad Manager URL.
  * @param {string} url - The URL to fetch the VAST response from
  * @param {boolean} forceRefresh - Force refresh bypassing cache
  * @return {Promise<VastResponseHandler|null>} The VAST response handler or null if failed
  */
 const fetchVastResponse = async (url, forceRefresh = false) => {
-  const cacheKey = getCacheKey(url);
+  const cacheKey = normalizeUrlForCaching(url);
 
-  // Check cache first (unless force refresh is requested)
   if (!forceRefresh) {
     const cachedResponse = vastResponseCache.get(cacheKey);
     if (isCacheValid(cachedResponse)) {
@@ -96,6 +74,19 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
       return cachedHandler;
     }
   } else {
+    const cachedResponse = vastResponseCache.get(cacheKey);
+    if (isInCooldownPeriod(cachedResponse)) {
+      console.log(
+        'Force refresh blocked due to cooldown period for:',
+        cacheKey,
+      );
+      const cachedHandler = new VastResponseHandler(
+        cachedResponse.data,
+        true,
+        cachedResponse.timestamp,
+      );
+      return cachedHandler;
+    }
     console.log('Force refresh requested, bypassing cache for:', cacheKey);
   }
 
@@ -105,10 +96,8 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
     return pendingRequests.get(cacheKey);
   }
 
-  // Create the actual fetch promise
   const fetchPromise = (async () => {
     try {
-      // Prepare URL with test parameters and fresh correlator
       const urlObj = new URL(url);
       urlObj.searchParams.set(TEST_PARAMETER.NAME, TEST_PARAMETER.VALUE);
       urlObj.searchParams.set('correlator', generateCorrelator());
@@ -117,8 +106,6 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
         'Fetching fresh VAST response from Google Ad Manager URL:',
         testUrl,
       );
-
-      // Fetch the VAST response
       const response = await fetch(testUrl, {
         method: 'GET',
         headers: {
@@ -141,14 +128,12 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
 
       const timestamp = Date.now();
 
-      // Create VastResponseHandler with cache info
       const vastResponseHandler = new VastResponseHandler(
         vastXml,
         false,
         timestamp,
       );
 
-      // Cache the response with metadata
       const cacheEntry = {
         data: vastXml,
         timestamp,
@@ -170,9 +155,6 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
   return fetchPromise;
 };
 
-/**
- * Clears the VAST response cache
- */
 export const clearVastResponseCache = () => {
   vastResponseCache.clear();
   pendingRequests.clear();
@@ -180,7 +162,6 @@ export const clearVastResponseCache = () => {
 };
 
 /**
- * Gets cache statistics for debugging
  * @return {Object} Cache statistics
  */
 export const getCacheStats = () => {
@@ -198,7 +179,28 @@ export const getCacheStats = () => {
 };
 
 /**
- * Validates a VAST URL for correctness and tag type detection.
+ * @param {string} url - The URL to check
+ * @return {Object} Cooldown status
+ */
+export const getCooldownStatus = (url) => {
+  const cacheKey = normalizeUrlForCaching(url);
+  const cachedResponse = vastResponseCache.get(cacheKey);
+
+  if (!cachedResponse) {
+    return { inCooldown: false, remainingTime: 0 };
+  }
+
+  const COOLDOWN_DURATION = 15 * 1000; // 15 seconds
+  const timeSinceCache = Date.now() - cachedResponse.timestamp;
+  const inCooldown = timeSinceCache < COOLDOWN_DURATION;
+  const remainingTime = inCooldown
+    ? Math.ceil((COOLDOWN_DURATION - timeSinceCache) / 1000)
+    : 0;
+
+  return { inCooldown, remainingTime, cacheAge: timeSinceCache };
+};
+
+/**
  * @param {string} url - The URL to validate
  * @return {Object} Validation result with success status and detected tag type
  */
@@ -208,11 +210,12 @@ export const validateUrl = (url) => {
 };
 
 /**
- * Performs comprehensive analysis of a VAST URL including parameter extraction and validation.
  * @param {string} url - The URL to analyze
  * @param {string} tagType - The selected tag type for analysis
  * @param {string} implementationType - The selected implementation type (web, mobile, etc.)
  * @param {boolean} forceRefresh - Force refresh VAST response bypassing cache
+ * @param {Object} options - Additional analysis options
+ * @param {boolean} options.ipViaHttpHeader - IP address is passed via HTTP header
  * @return {Promise<Object>} Analysis result with parameters and validation scores
  */
 export const analyzeUrl = async (
@@ -220,6 +223,7 @@ export const analyzeUrl = async (
   tagType,
   implementationType,
   forceRefresh = false,
+  options = {},
 ) => {
   const result = {
     success: false,
@@ -228,7 +232,6 @@ export const analyzeUrl = async (
     analysisResult: {},
   };
 
-  // Parse URL and extract parameters
   const parser = new VastURLParser(url);
   const parseResult = parser.parse();
   if (!parseResult.success) {
@@ -237,12 +240,12 @@ export const analyzeUrl = async (
   }
   result.vastParameters = parseResult.params;
 
-  // Analyze Vast URL based on the parsed parameters
   const analyzer = new VastURLAnalyzer(
     url,
     parseResult.params,
     tagType,
     implementationType,
+    options,
   );
 
   const analyzerResult = analyzer.analyze();
@@ -251,9 +254,8 @@ export const analyzeUrl = async (
     return result;
   }
 
-  // Fetch VAST response
   try {
-    const cacheKey = getCacheKey(url);
+    const cacheKey = normalizeUrlForCaching(url);
     const cachedResponse = vastResponseCache.get(cacheKey);
     const shouldRespectCooldown =
       !forceRefresh && isInCooldownPeriod(cachedResponse);
