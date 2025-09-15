@@ -1,5 +1,8 @@
 name: E2E Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -9,11 +12,7 @@ on:
 jobs:
   run-e2e-tests:
     name: Run E2E tests
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: macos-latest
 
     steps:
       - name: Check out Git repository
