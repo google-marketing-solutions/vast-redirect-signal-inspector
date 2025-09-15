@@ -21,20 +21,24 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import InsightsIcon from '@mui/icons-material/Insights';
+
 import * as styles from './style.module.css';
 
 /**
- * URL input form with analyze button
  * @return {JSX.Element} The URLInputForm component
  */
 const URLInputForm = ({ url, onChange, onAnalyze, isAnalyzeDisabled }) => {
   return (
-    <Box className={styles.inputFormContainer} id="url-input-form">
+    <Box
+      className={`${styles.inputFormContainer} ${styles.urlInputContainer}`}
+      id="url-input-form"
+    >
       <TextField
         className={`${styles.urlTextField} vast-redirect-url-input`}
         label="Vast Redirect URL"

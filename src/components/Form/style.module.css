@@ -83,7 +83,7 @@
 }
 
 .buttonAdornment {
-  margin-right: -18px;
+  margin-right: -10px;
 }
 
 @media (max-width: 600px) {
@@ -99,4 +99,167 @@
   .analyzeButton {
     width: 100%;
   }
+}
+
+.tagTypeInfo {
+  width: 100%;
+  margin: 0.5rem 0 0 0;
+  padding: 0.75rem;
+  background-color: rgba(33, 150, 243, 0.05);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.tagTypeInfo:hover {
+  background-color: rgba(33, 150, 243, 0.08);
+  border-color: rgba(33, 150, 243, 0.3);
+}
+
+.tagTypeInfoContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.tagTypeInfoIcon {
+  color: rgba(33, 150, 243, 0.7);
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.tagTypeInfoText {
+  color: rgba(0, 0, 0, 0.7);
+  line-height: 1.4;
+  font-size: 0.875rem;
+}
+
+.tagTypeInfoLink {
+  color: #1976d2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.tagTypeInfoLink:hover {
+  color: #1565c0;
+  text-decoration: underline;
+}
+
+.inlineLabel {
+  color: rgba(0, 0, 0, 0.6) !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fieldsetLabel {
+  position: absolute !important;
+  top: -0.75rem !important;
+  left: 0.75rem !important;
+  background-color: white !important;
+  padding: 0.25rem 0.5rem !important;
+  font-size: 1rem !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+  font-weight: 400 !important;
+  z-index: 1 !important;
+  transform: none !important;
+  line-height: 1 !important;
+}
+
+.fieldsetBorder {
+  border: 1px solid rgba(0, 0, 0, 0.23) !important;
+  border-radius: 4px !important;
+  padding: 0.75rem !important;
+  position: relative !important;
+  transition: border-color 0.2s ease !important;
+  width: 100% !important;
+  background-color: white !important;
+  margin: 0.5rem 0 1rem 0 !important;
+}
+
+.fieldsetBorder:hover {
+  border-color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.fieldsetBorderNoBottomMargin {
+  border: 1px solid rgba(0, 0, 0, 0.23) !important;
+  border-radius: 4px !important;
+  padding: 0.75rem !important;
+  position: relative !important;
+  transition: border-color 0.2s ease !important;
+  width: 100% !important;
+  background-color: white !important;
+  margin: 1rem 0 0 0 !important;
+}
+
+.fieldsetBorderNoBottomMargin:hover {
+  border-color: rgba(0, 0, 0, 0.87) !important;
+}
+
+.formControlFieldset {
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.23);
+  border-radius: 4px;
+  padding: 0.75rem;
+  position: relative;
+  background-color: white;
+  margin: 0.5rem 0 1rem 0;
+  transition: border-color 0.2s ease;
+}
+
+.formControlFieldset:hover {
+  border-color: rgba(0, 0, 0, 0.87);
+}
+
+.formControlFieldsetNoBottomMargin {
+  margin: 1rem 0 0 0;
+}
+
+.formControlFieldsetLabel {
+  position: absolute;
+  top: -0.75rem;
+  left: 0.75rem;
+  background-color: white;
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 400;
+  z-index: 1;
+  line-height: 1;
+}
+
+.formContentBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.radioGroupContainer {
+  justify-content: center !important;
+}
+
+.additionalOptionsContainer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 0.875rem;
+}
+
+.additionalOptionsContainer * {
+  font-size: 0.875rem !important;
+}
+
+.urlInputContainer {
+  background-color: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  margin-bottom: 1rem;
 }

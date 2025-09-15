@@ -17,7 +17,6 @@
     "programmatic": {
       "required": ["idtype", "is_lat", "ott_placement", "plcmt", "rdid", "vpa"],
       "recommended": [
-        "aconp",
         "an",
         "dth",
         "givn",

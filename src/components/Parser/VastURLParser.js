@@ -26,7 +26,6 @@ class VastURLParser {
   };
 
   /**
-   * Creates a new VAST URL parser instance.
    * @param {string} url - The VAST URL to parse
    */
   constructor(url) {
@@ -34,7 +33,6 @@ class VastURLParser {
   }
 
   /**
-   * Parses the VAST URL and extracts all parameters.
    * @return {Object} Parsed parameters and metadata
    */
   parse() {

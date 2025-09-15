@@ -35,7 +35,6 @@ class VastURLValidator {
   };
 
   /**
-   * Creates a new VAST URL validator instance.
    * @param {string} url - The VAST URL to validate
    */
   constructor(url) {
@@ -43,7 +42,6 @@ class VastURLValidator {
   }
 
   /**
-   * Validates the VAST URL for correctness and detects tag type.
    * @return {Object} Validation result with success status, errors, and detected tag type
    */
   validate() {

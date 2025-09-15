@@ -28,7 +28,6 @@ import ShareButton from '../Button/ShareButton';
 import * as styles from './style.module.css';
 
 /**
- * Displays the analysis results including scores and parameters
  * @return {JSX.Element|null} The AnalysisResults component or null if no results
  */
 const AnalysisResults = ({
@@ -38,6 +37,7 @@ const AnalysisResults = ({
   implementationType,
   showDebug,
   onShareClick,
+  onRefreshVast,
 }) => {
   if (!analysisResult || Object.keys(analysisResult).length === 0) {
     return null;
@@ -67,7 +67,11 @@ const AnalysisResults = ({
         </Box>
       </Box>
 
-      <VastURLParameters data={analysisResult} showDebug={showDebug} />
+      <VastURLParameters
+        data={analysisResult}
+        showDebug={showDebug}
+        onRefreshVast={onRefreshVast}
+      />
     </Box>
   );
 };
@@ -79,6 +83,7 @@ AnalysisResults.propTypes = {
   implementationType: PropTypes.string.isRequired,
   showDebug: PropTypes.bool,
   onShareClick: PropTypes.func.isRequired,
+  onRefreshVast: PropTypes.func,
 };
 
 AnalysisResults.defaultProps = {

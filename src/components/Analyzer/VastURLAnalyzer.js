@@ -55,13 +55,21 @@ class VastURLAnalyzer {
    * @param {Object} vastParams
    * @param {TAG_TYPE} vastTagType
    * @param {IMPLEMENTATION_TYPE} implementationType
+   * @param {Object} options
    * @constructor
    */
-  constructor(vastURL, vastParams, vastTagType, implementationType) {
+  constructor(
+    vastURL,
+    vastParams,
+    vastTagType,
+    implementationType,
+    options = {},
+  ) {
     this.vastURL = vastURL;
     this.vastParams = vastParams;
     this.vastTagType = vastTagType;
     this.implementationType = implementationType;
+    this.options = options;
     this.state = {
       analysisResult: null,
       metadata: null,
@@ -82,17 +90,11 @@ class VastURLAnalyzer {
     }
 
     console.info(
-      'Analyzing',
-      this.vastTagType,
-      'VAST URL ',
-      this.vastURL,
-      'for',
-      this.implementationType,
-      'with',
-      this.vastParams,
+      `Analyzing ${this.vastTagType} VAST URL for ${this.implementationType}`,
+      { url: this.vastURL, params: this.vastParams },
     );
 
-    // Loading rules based on the implementation type and create a immutable copy.
+    // Load rules based on implementation type and create immutable copy
     let rules = {};
     if (this.implementationType == IMPLEMENTATION_TYPE.WEB) {
       rules = JSON.parse(JSON.stringify(webValidationRules));
@@ -108,7 +110,6 @@ class VastURLAnalyzer {
       rules = JSON.parse(JSON.stringify(digitalOutOfHomeValidationRules));
     }
 
-    // Define basic Rules
     const requiredParametersRules = rules.parameters.required;
     const programmaticRequiredParamsRules =
       rules.parameters.programmatic.required;
@@ -116,13 +117,11 @@ class VastURLAnalyzer {
       rules.parameters.programmatic.recommended;
     const overrideParams = [];
 
-    // Add SDK specific parameters, if applicable.
     const sdkManagedParamNames =
       this.vastTagType == TAG_TYPE.IMA_SDK
         ? sdkParameters.map((param) => param.name)
         : [];
 
-    // Add IMA SDK specific parameters and remove some parameters
     if (this.vastTagType == TAG_TYPE.IMA_SDK) {
       if (programmaticRecommendedParamsRules.includes('dth')) {
         programmaticRecommendedParamsRules.splice(
@@ -138,7 +137,6 @@ class VastURLAnalyzer {
       }
     }
 
-    // Add PAI specific parameters
     if (
       this.vastTagType == TAG_TYPE.PAI ||
       this.vastTagType == TAG_TYPE.PAI_PAL
@@ -149,9 +147,13 @@ class VastURLAnalyzer {
       if (!requiredParametersRules.includes('ip')) {
         requiredParametersRules.push('ip');
       }
+
+      // If IP is provided via HTTP header, treat it as override parameter
+      if (this.options.ipViaHttpHeader) {
+        overrideParams.push('ip');
+      }
     }
 
-    // Add PAL specific parameters
     if (
       this.vastTagType == TAG_TYPE.PAL ||
       this.vastTagType == TAG_TYPE.PAI_PAL
@@ -185,7 +187,6 @@ class VastURLAnalyzer {
       programmaticRecommendedParamsRules.push('ott_placement');
     }
 
-    // Create Results
     const requiredParamsResult = this.validateRequiredParameters(
       this.vastParams,
       requiredParametersRules,
@@ -222,6 +223,15 @@ class VastURLAnalyzer {
       sdkManagedParamNames,
     );
     const specialParamsResult = {};
+
+    // Special validation for aconp and vconp parameters
+    this.validateContinuousPlayParameters(
+      this.vastParams,
+      requiredParamsResult,
+      programmaticRequiredParamsResult,
+      programmaticRecommendedParamsResult,
+      otherParamsResult,
+    );
 
     const analysisResult = new VastTagAnalyzerResult(this.vastURL);
     analysisResult.requiredParameters = requiredParamsResult;
@@ -299,7 +309,6 @@ class VastURLAnalyzer {
 
     // Validate required parameters
     requiredParams.forEach((parameterName) => {
-      // Get vast ad tag parameter reference.
       const vastAdTagParameter = vastAdTagParameters.find(
         (entry) => entry.name === parameterName,
       );
@@ -447,6 +456,73 @@ class VastURLAnalyzer {
     });
 
     return parameterResults;
+  }
+
+  /**
+   * Special validation for aconp and vconp parameters according to their usage rules
+   * @param {Object} parameters - The URL parameters
+   * @param {Object} requiredResults - Required parameters results
+   * @param {Object} programmaticRequiredResults - Programmatic required parameters results
+   * @param {Object} programmaticRecommendedResults - Programmatic recommended parameters results
+   * @param {Object} otherResults - Other parameters results
+   */
+  validateContinuousPlayParameters(
+    parameters,
+    requiredResults,
+    programmaticRequiredResults,
+    programmaticRecommendedResults,
+    otherResults,
+  ) {
+    const hasAconp = 'aconp' in parameters;
+    const hasVconp = 'vconp' in parameters;
+
+    const allResults = {
+      ...requiredResults,
+      ...programmaticRequiredResults,
+      ...programmaticRecommendedResults,
+      ...otherResults,
+    };
+
+    const aconpResult = allResults['aconp'];
+    const vconpResult = allResults['vconp'];
+
+    // Rule 1: If both aconp and vconp are present - ERROR
+    if (hasAconp && hasVconp) {
+      const errorMessage =
+        'Both aconp and vconp parameters are present. These parameters are mutually exclusive - only one should be used.';
+
+      if (aconpResult) {
+        aconpResult.valid = false;
+        aconpResult.warning = errorMessage;
+        aconpResult.score = VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+      }
+
+      if (vconpResult) {
+        vconpResult.valid = false;
+        vconpResult.warning = errorMessage;
+        vconpResult.score = VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+      }
+
+      return;
+    }
+
+    // Rule 2: Show warning when aconp is used for non-audio content
+    if (hasAconp && this.implementationType !== IMPLEMENTATION_TYPE.AUDIO) {
+      if (aconpResult) {
+        aconpResult.warning =
+          'aconp parameter is intended for audio tags only. For video content, consider using vconp parameter instead.';
+      }
+    }
+
+    // Rule 3: Show error when vconp is used for audio content
+    if (hasVconp && this.implementationType === IMPLEMENTATION_TYPE.AUDIO) {
+      if (vconpResult) {
+        vconpResult.valid = false;
+        vconpResult.warning =
+          'vconp parameter is not suitable for audio implementation. Use aconp parameter instead.';
+        vconpResult.score = VastURLAnalyzer.DefaultScore.REQUIRED_PARAM_MISSING;
+      }
+    }
   }
 }
 

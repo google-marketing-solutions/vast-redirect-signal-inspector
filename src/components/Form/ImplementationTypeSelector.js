@@ -21,16 +21,35 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+
 import * as styles from './style.module.css';
 
 /**
- * Radio button group for selecting implementation types
+ * @param {string} implementationType - The implementation type
+ * @return {string} Tooltip text
+ */
+const getImplementationTypeTooltip = (implementationType) => {
+  const tooltips = {
+    web: 'Desktop and mobile web browsers - Standard web implementation',
+    mobileApp:
+      'Native mobile applications (iOS/Android) - Mobile app integration',
+    connectedTV: 'Smart TVs and streaming devices - Large screen experiences',
+    audio: 'Audio-only environments - Podcasts and audio streaming platforms',
+    digitalOutOfHome:
+      'DOOH displays and digital billboards - Public advertising screens',
+  };
+  return tooltips[implementationType] || implementationType;
+};
+
+/**
  * @return {JSX.Element} The ImplementationTypeSelector component
  */
 const ImplementationTypeSelector = ({
@@ -39,45 +58,42 @@ const ImplementationTypeSelector = ({
   onChange,
 }) => {
   return (
-    <Box className={styles.formControl}>
-      <FormControl component="fieldset" sx={{ width: '100%' }}>
-        <Typography
-          variant="body1"
-          sx={{ textAlign: 'center', marginBottom: 0.5 }}
+    <FormControl
+      component="fieldset"
+      className={styles.fieldsetBorderNoBottomMargin}
+    >
+      <FormLabel component="legend" className={styles.fieldsetLabel}>
+        Implementation Type
+      </FormLabel>
+
+      <Box className={styles.formContentBox}>
+        <RadioGroup
+          aria-label="implementation-type"
+          className={`implementation-type-radio-group ${styles.radioGroupContainer}`}
+          name="implementationType"
+          value={selectedType}
+          onChange={onChange}
+          row
         >
-          Implementation Type:
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-          }}
-        >
-          <RadioGroup
-            aria-label="implementation-type"
-            className="implementation-type-radio-group"
-            name="implementationType"
-            value={selectedType}
-            onChange={onChange}
-            row
-            sx={{ justifyContent: 'center' }}
-          >
-            {Object.values(implementationTypes).map((type) => (
+          {Object.values(implementationTypes).map((type) => (
+            <Tooltip
+              key={type}
+              title={getImplementationTypeTooltip(type)}
+              arrow
+              placement="top"
+            >
               <FormControlLabel
-                key={type}
                 value={type}
                 control={<Radio />}
                 label={type
                   .replace(/_/g, ' ')
                   .replace(/\b\w/g, (l) => l.toUpperCase())}
               />
-            ))}
-          </RadioGroup>
-        </Box>
-      </FormControl>
-    </Box>
+            </Tooltip>
+          ))}
+        </RadioGroup>
+      </Box>
+    </FormControl>
   );
 };
 

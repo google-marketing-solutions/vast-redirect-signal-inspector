@@ -45,7 +45,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import CodeIcon from '@mui/icons-material/Code';
 import HelpIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
 import TourIcon from '@mui/icons-material/Tour';
 import LockIcon from '@mui/icons-material/Lock';
 import ApiIcon from '@mui/icons-material/Api';
@@ -74,7 +73,6 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
     { name: 'Issues', icon: <BugReportIcon /> },
     { name: 'Tour', icon: <TourIcon /> },
     { name: 'Help', icon: <HelpIcon /> },
-    { name: 'About', icon: <InfoIcon /> },
   ];
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();
@@ -209,6 +207,24 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
         open={open}
       >
         <DrawerHeader>
+          <Button
+            onClick={(event) => {
+              onNavigate(event, 'Home');
+              handleDrawerClose();
+            }}
+            sx={{
+              marginRight: 'auto',
+              textTransform: 'none',
+              color: 'inherit',
+              fontSize: '1rem',
+              padding: '8px 16px',
+              minHeight: '48px',
+              justifyContent: 'flex-start',
+            }}
+            startIcon={<HomeIcon sx={{ fontSize: '1.25rem' }} />}
+          >
+            Home
+          </Button>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'ltr' ? (
               <ChevronLeftIcon />
@@ -217,22 +233,6 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
             )}
           </IconButton>
         </DrawerHeader>
-        <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={(event) => {
-                onNavigate(event, 'Home');
-                handleDrawerClose();
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: '36px' }}>
-                <HomeIcon />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItemButton>
-          </ListItem>
-        </List>
         <Divider />
         <List>
           {[
