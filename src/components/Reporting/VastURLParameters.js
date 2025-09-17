@@ -21,6 +21,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+import Box from '@mui/material/Box';
 import ParameterTable from './ParameterTable';
 import VastResponse from './VastResponse';
 
@@ -45,7 +46,14 @@ class VastURLParameters extends React.PureComponent {
     const analysisResult = data || {};
 
     return (
-      <div style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
+      <Box
+        sx={{
+          maxWidth: '100%',
+          width: 'calc(100vw - 110px)',
+          margin: '0 auto',
+          boxSizing: 'border-box',
+        }}
+      >
         <ParameterTable
           params={analysisResult.requiredParameters}
           title="Required Parameters"
@@ -70,7 +78,7 @@ class VastURLParameters extends React.PureComponent {
           vastResponse={analysisResult.vastResponse}
           onRefresh={onRefreshVast}
         />
-      </div>
+      </Box>
     );
   }
 }

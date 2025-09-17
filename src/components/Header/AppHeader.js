@@ -151,28 +151,33 @@ const AppHeader = ({ version, onNavigate, analysisResult }) => {
               display: { xs: 'none', sm: 'block', verticalAlign: 'middle' },
             }}
           >
-            <img
-              src="https://raw.githubusercontent.com/google-marketing-solutions/vast-redirect-signal-inspector/main/assets/png/logo_home.png"
-              alt="Logo"
-              style={{
-                height: '0.7em',
-                width: 'auto',
-                verticalAlign: 'middle',
-                margin: '0 10px 5px 0',
-              }}
-            />
-            VAST Signal Inspector v{version}
+            VAST Signal Inspector
             <span
               style={{
-                backgroundColor: '#e0e0e0',
+                backgroundColor: '#f5f5f5',
+                color: '#666',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                fontSize: '0.6em',
+                marginLeft: '8px',
+                fontWeight: 'normal',
+              }}
+            >
+              v{version}
+            </span>
+            <span
+              style={{
+                backgroundColor: '#fff',
                 color: '#333',
                 padding: '2px 5px',
                 borderRadius: '3px',
-                fontSize: '0.7em',
+                fontSize: '0.6em',
                 marginLeft: '5px',
+                fontWeight: '600',
+                border: '1px solid #ddd',
               }}
             >
-              Beta
+              🚧 Beta
             </span>
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
