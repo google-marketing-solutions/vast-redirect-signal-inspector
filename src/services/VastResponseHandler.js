@@ -34,7 +34,9 @@ class VastResponseHandler {
     this.cacheTimestamp = cacheTimestamp;
     this.parsedData = null;
     this.validationErrors = [];
+    this.validationWarnings = [];
     this.analysisResults = {};
+    this.isNonVastFormat = false;
 
     if (vastXml) {
       this.parseXml();
@@ -57,9 +59,58 @@ class VastResponseHandler {
         return;
       }
 
+      // Check for valid root element
+      const rootElement = doc.documentElement;
+      const rootTagName = rootElement?.tagName;
+
+      // Check for VAST element
       const vastElement = doc.querySelector('VAST');
       if (!vastElement) {
-        this.validationErrors.push('No VAST element found');
+        // Check if it's VMAP (valid IAB format, but not supported by this tool)
+        if (rootTagName && rootTagName.toUpperCase().startsWith('VMAP')) {
+          this.isNonVastFormat = true;
+          this.validationWarnings.push(
+            'VMAP format detected - This tool currently only supports VAST responses. VMAP is a valid IAB format but requires different parsing.',
+          );
+          this.parsedData = {
+            version: null,
+            ads: [],
+            errors: [],
+            impressions: [],
+            trackingEvents: {},
+            companionAds: [],
+            adVerifications: [],
+            icons: [],
+            mediaFiles: [],
+            clickTracking: { clickThrough: [], clickTracking: [] },
+          };
+          return;
+        } else if (rootTagName === 'Playlist' || rootTagName === 'playlist') {
+          // Playlist is a valid Google Ad Manager response (e.g., when no ads available and Ad Rules configured)
+          this.isNonVastFormat = true;
+          this.validationWarnings.push(
+            'Playlist response detected - This appears to be a valid Google Ad Manager response, but it contains no VAST content. This can occur when no ads are eligible to serve or when Ad Rules are configured to return an empty playlist. Please verify your Ad Rules configuration.',
+          );
+          this.parsedData = {
+            version: null,
+            ads: [],
+            errors: [],
+            impressions: [],
+            trackingEvents: {},
+            companionAds: [],
+            adVerifications: [],
+            icons: [],
+            mediaFiles: [],
+            clickTracking: { clickThrough: [], clickTracking: [] },
+          };
+          return;
+        } else if (rootTagName) {
+          this.validationErrors.push(
+            `Invalid root element: <${rootTagName}> - Expected <VAST> element`,
+          );
+        } else {
+          this.validationErrors.push('No VAST element found');
+        }
         return;
       }
 
@@ -87,35 +138,40 @@ class VastResponseHandler {
    */
   extractAds(doc) {
     const ads = [];
-    const adElements = doc.querySelectorAll('Ad');
+    try {
+      const adElements = doc.querySelectorAll('Ad');
 
-    adElements.forEach((ad, index) => {
-      const adData = {
-        id: ad.getAttribute('id') || `ad-${index}`,
-        sequence: ad.getAttribute('sequence'),
-        type: ad.querySelector('InLine')
-          ? 'InLine'
-          : ad.querySelector('Wrapper')
-            ? 'Wrapper'
-            : 'Unknown',
-      };
-
-      // Extract creative information
-      const creatives = ad.querySelectorAll('Creative');
-      adData.creatives = Array.from(creatives).map((creative) => ({
-        id: creative.getAttribute('id'),
-        sequence: creative.getAttribute('sequence'),
-        type: creative.querySelector('Linear')
-          ? 'Linear'
-          : creative.querySelector('NonLinearAds')
-            ? 'NonLinear'
-            : creative.querySelector('CompanionAds')
-              ? 'Companion'
+      adElements.forEach((ad, index) => {
+        const adData = {
+          id: ad.getAttribute('id') || `ad-${index}`,
+          sequence: ad.getAttribute('sequence'),
+          type: ad.querySelector('InLine')
+            ? 'InLine'
+            : ad.querySelector('Wrapper')
+              ? 'Wrapper'
               : 'Unknown',
-      }));
+        };
 
-      ads.push(adData);
-    });
+        // Extract creative information
+        const creatives = ad.querySelectorAll('Creative');
+        adData.creatives = Array.from(creatives).map((creative) => ({
+          id: creative.getAttribute('id'),
+          sequence: creative.getAttribute('sequence'),
+          type: creative.querySelector('Linear')
+            ? 'Linear'
+            : creative.querySelector('NonLinearAds')
+              ? 'NonLinear'
+              : creative.querySelector('CompanionAds')
+                ? 'Companion'
+                : 'Unknown',
+        }));
+
+        ads.push(adData);
+      });
+    } catch (error) {
+      console.error('Error extracting ads:', error);
+      this.validationErrors.push(`Failed to extract ads: ${error.message}`);
+    }
 
     return ads;
   }
@@ -126,8 +182,15 @@ class VastResponseHandler {
    * @return {Array} Array of error URLs
    */
   extractErrors(doc) {
-    const errorElements = doc.querySelectorAll('Error');
-    return Array.from(errorElements).map((error) => error.textContent.trim());
+    try {
+      const errorElements = doc.querySelectorAll('Error');
+      return Array.from(errorElements).map(
+        (error) => error.textContent?.trim() || '',
+      );
+    } catch (error) {
+      console.error('Error extracting error URLs:', error);
+      return [];
+    }
   }
 
   /**
@@ -136,10 +199,15 @@ class VastResponseHandler {
    * @return {Array} Array of impression URLs
    */
   extractImpressions(doc) {
-    const impressionElements = doc.querySelectorAll('Impression');
-    return Array.from(impressionElements).map((impression) =>
-      impression.textContent.trim(),
-    );
+    try {
+      const impressionElements = doc.querySelectorAll('Impression');
+      return Array.from(impressionElements).map(
+        (impression) => impression.textContent?.trim() || '',
+      );
+    } catch (error) {
+      console.error('Error extracting impressions:', error);
+      return [];
+    }
   }
 
   /**
@@ -149,17 +217,21 @@ class VastResponseHandler {
    */
   extractTrackingEvents(doc) {
     const trackingEvents = {};
-    const trackingElements = doc.querySelectorAll('Tracking');
+    try {
+      const trackingElements = doc.querySelectorAll('Tracking');
 
-    trackingElements.forEach((tracking) => {
-      const eventType = tracking.getAttribute('event');
-      if (eventType) {
-        if (!trackingEvents[eventType]) {
-          trackingEvents[eventType] = [];
+      trackingElements.forEach((tracking) => {
+        const eventType = tracking.getAttribute('event');
+        if (eventType) {
+          if (!trackingEvents[eventType]) {
+            trackingEvents[eventType] = [];
+          }
+          trackingEvents[eventType].push(tracking.textContent?.trim() || '');
         }
-        trackingEvents[eventType].push(tracking.textContent.trim());
-      }
-    });
+      });
+    } catch (error) {
+      console.error('Error extracting tracking events:', error);
+    }
 
     return trackingEvents;
   }
@@ -171,26 +243,30 @@ class VastResponseHandler {
    */
   extractCompanionAds(doc) {
     const companions = [];
-    const companionElements = doc.querySelectorAll('Companion');
+    try {
+      const companionElements = doc.querySelectorAll('Companion');
 
-    companionElements.forEach((companion) => {
-      companions.push({
-        id: companion.getAttribute('id'),
-        width: companion.getAttribute('width'),
-        height: companion.getAttribute('height'),
-        resourceType: companion.querySelector('StaticResource')
-          ? 'StaticResource'
-          : companion.querySelector('IFrameResource')
-            ? 'IFrameResource'
-            : companion.querySelector('HTMLResource')
-              ? 'HTMLResource'
-              : 'Unknown',
-        clickThrough:
-          companion
-            .querySelector('CompanionClickThrough')
-            ?.textContent?.trim() || null,
+      companionElements.forEach((companion) => {
+        companions.push({
+          id: companion.getAttribute('id'),
+          width: companion.getAttribute('width'),
+          height: companion.getAttribute('height'),
+          resourceType: companion.querySelector('StaticResource')
+            ? 'StaticResource'
+            : companion.querySelector('IFrameResource')
+              ? 'IFrameResource'
+              : companion.querySelector('HTMLResource')
+                ? 'HTMLResource'
+                : 'Unknown',
+          clickThrough:
+            companion
+              .querySelector('CompanionClickThrough')
+              ?.textContent?.trim() || null,
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error extracting companion ads:', error);
+    }
 
     return companions;
   }
@@ -202,25 +278,30 @@ class VastResponseHandler {
    */
   extractAdVerifications(doc) {
     const verifications = [];
-    const verificationElements = doc.querySelectorAll(
-      'AdVerifications Verification',
-    );
-
-    verificationElements.forEach((verification) => {
-      const vendorKey = verification.getAttribute('vendor');
-      const jsResource = verification.querySelector('JavaScriptResource');
-      const verificationParameters = verification.querySelector(
-        'VerificationParameters',
+    try {
+      const verificationElements = doc.querySelectorAll(
+        'AdVerifications Verification',
       );
 
-      verifications.push({
-        vendor: vendorKey,
-        jsResourceUrl: jsResource?.textContent?.trim() || null,
-        apiFramework: jsResource?.getAttribute('apiFramework') || null,
-        parameters: verificationParameters?.textContent?.trim() || null,
-        browserOptional: jsResource?.getAttribute('browserOptional') === 'true',
+      verificationElements.forEach((verification) => {
+        const vendorKey = verification.getAttribute('vendor');
+        const jsResource = verification.querySelector('JavaScriptResource');
+        const verificationParameters = verification.querySelector(
+          'VerificationParameters',
+        );
+
+        verifications.push({
+          vendor: vendorKey,
+          jsResourceUrl: jsResource?.textContent?.trim() || null,
+          apiFramework: jsResource?.getAttribute('apiFramework') || null,
+          parameters: verificationParameters?.textContent?.trim() || null,
+          browserOptional:
+            jsResource?.getAttribute('browserOptional') === 'true',
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error extracting ad verifications:', error);
+    }
 
     return verifications;
   }
@@ -232,29 +313,33 @@ class VastResponseHandler {
    */
   extractIcons(doc) {
     const icons = [];
-    const iconElements = doc.querySelectorAll('Icons Icon');
+    try {
+      const iconElements = doc.querySelectorAll('Icons Icon');
 
-    iconElements.forEach((icon) => {
-      icons.push({
-        program: icon.getAttribute('program'),
-        width: icon.getAttribute('width'),
-        height: icon.getAttribute('height'),
-        xPosition: icon.getAttribute('xPosition'),
-        yPosition: icon.getAttribute('yPosition'),
-        duration: icon.getAttribute('duration'),
-        offset: icon.getAttribute('offset'),
-        apiFramework: icon.getAttribute('apiFramework'),
-        resourceType: icon.querySelector('StaticResource')
-          ? 'StaticResource'
-          : icon.querySelector('IFrameResource')
-            ? 'IFrameResource'
-            : icon.querySelector('HTMLResource')
-              ? 'HTMLResource'
-              : 'Unknown',
-        clickThrough:
-          icon.querySelector('IconClickThrough')?.textContent?.trim() || null,
+      iconElements.forEach((icon) => {
+        icons.push({
+          program: icon.getAttribute('program'),
+          width: icon.getAttribute('width'),
+          height: icon.getAttribute('height'),
+          xPosition: icon.getAttribute('xPosition'),
+          yPosition: icon.getAttribute('yPosition'),
+          duration: icon.getAttribute('duration'),
+          offset: icon.getAttribute('offset'),
+          apiFramework: icon.getAttribute('apiFramework'),
+          resourceType: icon.querySelector('StaticResource')
+            ? 'StaticResource'
+            : icon.querySelector('IFrameResource')
+              ? 'IFrameResource'
+              : icon.querySelector('HTMLResource')
+                ? 'HTMLResource'
+                : 'Unknown',
+          clickThrough:
+            icon.querySelector('IconClickThrough')?.textContent?.trim() || null,
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error extracting icons:', error);
+    }
 
     return icons;
   }
@@ -266,24 +351,28 @@ class VastResponseHandler {
    */
   extractMediaFiles(doc) {
     const mediaFiles = [];
-    const mediaFileElements = doc.querySelectorAll('MediaFile');
+    try {
+      const mediaFileElements = doc.querySelectorAll('MediaFile');
 
-    mediaFileElements.forEach((mediaFile) => {
-      mediaFiles.push({
-        id: mediaFile.getAttribute('id'),
-        delivery: mediaFile.getAttribute('delivery'),
-        type: mediaFile.getAttribute('type'),
-        width: mediaFile.getAttribute('width'),
-        height: mediaFile.getAttribute('height'),
-        codec: mediaFile.getAttribute('codec'),
-        bitrate: mediaFile.getAttribute('bitrate'),
-        scalable: mediaFile.getAttribute('scalable') === 'true',
-        maintainAspectRatio:
-          mediaFile.getAttribute('maintainAspectRatio') === 'true',
-        apiFramework: mediaFile.getAttribute('apiFramework'),
-        url: mediaFile.textContent?.trim() || null,
+      mediaFileElements.forEach((mediaFile) => {
+        mediaFiles.push({
+          id: mediaFile.getAttribute('id'),
+          delivery: mediaFile.getAttribute('delivery'),
+          type: mediaFile.getAttribute('type'),
+          width: mediaFile.getAttribute('width'),
+          height: mediaFile.getAttribute('height'),
+          codec: mediaFile.getAttribute('codec'),
+          bitrate: mediaFile.getAttribute('bitrate'),
+          scalable: mediaFile.getAttribute('scalable') === 'true',
+          maintainAspectRatio:
+            mediaFile.getAttribute('maintainAspectRatio') === 'true',
+          apiFramework: mediaFile.getAttribute('apiFramework'),
+          url: mediaFile.textContent?.trim() || null,
+        });
       });
-    });
+    } catch (error) {
+      console.error('Error extracting media files:', error);
+    }
 
     return mediaFiles;
   }
@@ -294,14 +383,22 @@ class VastResponseHandler {
    * @return {Object} Click tracking information
    */
   extractClickTracking(doc) {
-    return {
-      clickThrough: Array.from(doc.querySelectorAll('ClickThrough')).map((el) =>
-        el.textContent?.trim(),
-      ),
-      clickTracking: Array.from(doc.querySelectorAll('ClickTracking')).map(
-        (el) => el.textContent?.trim(),
-      ),
-    };
+    try {
+      return {
+        clickThrough: Array.from(doc.querySelectorAll('ClickThrough')).map(
+          (el) => el.textContent?.trim() || '',
+        ),
+        clickTracking: Array.from(doc.querySelectorAll('ClickTracking')).map(
+          (el) => el.textContent?.trim() || '',
+        ),
+      };
+    } catch (error) {
+      console.error('Error extracting click tracking:', error);
+      return {
+        clickThrough: [],
+        clickTracking: [],
+      };
+    }
   }
 
   /**
@@ -312,7 +409,7 @@ class VastResponseHandler {
     const validation = {
       isValid: true,
       errors: [...this.validationErrors],
-      warnings: [],
+      warnings: [...this.validationWarnings],
     };
 
     if (!this.parsedData) {
@@ -321,15 +418,21 @@ class VastResponseHandler {
       return validation;
     }
 
+    // If it's a non-VAST format (VMAP, Playlist), skip VAST-specific validations
+    if (this.isNonVastFormat) {
+      return validation;
+    }
+
     // Check VAST version
     if (!this.parsedData.version) {
       validation.warnings.push('VAST version not specified');
     }
 
-    // Check for ads
+    // Check for presence of ads, if no ads, it's a warning (not an error)
     if (!this.parsedData.ads || this.parsedData.ads.length === 0) {
-      validation.isValid = false;
-      validation.errors.push('No ads found in VAST response');
+      validation.warnings.push(
+        'No ads found in VAST response (ads may not be live or no matching inventory available)',
+      );
     }
 
     // Check for required elements in ads
@@ -377,6 +480,8 @@ class VastResponseHandler {
       return {
         isValid: false,
         error: 'Unable to parse VAST response',
+        validationErrors: this.validationErrors,
+        validationWarnings: this.validationWarnings,
       };
     }
 

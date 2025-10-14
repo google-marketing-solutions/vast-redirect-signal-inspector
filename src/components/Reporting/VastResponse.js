@@ -248,6 +248,56 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
         </Box>
       </Box>
 
+      {isHandler && summary && !summary.isValid && (
+        <Box mb={2}>
+          <Alert severity="error" sx={{ mb: 1 }}>
+            <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+              Invalid VAST Response
+            </Typography>
+            <Typography variant="body2">
+              The response could not be parsed as a valid VAST document. The raw
+              response is displayed below for debugging purposes.
+            </Typography>
+            {summary.validationErrors &&
+              summary.validationErrors.length > 0 && (
+                <Box mt={1}>
+                  <Typography variant="body2" fontWeight="bold">
+                    Errors:
+                  </Typography>
+                  <ul style={{ margin: '4px 0', paddingLeft: '20px' }}>
+                    {summary.validationErrors.map((error, index) => (
+                      <li key={index}>
+                        <Typography variant="body2">{error}</Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+          </Alert>
+        </Box>
+      )}
+
+      {isHandler &&
+        summary &&
+        summary.isValid &&
+        summary.validationWarnings &&
+        summary.validationWarnings.length > 0 && (
+          <Box mb={2}>
+            <Alert severity="warning" sx={{ mb: 1 }}>
+              <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                VAST Response Warnings
+              </Typography>
+              <ul style={{ margin: '4px 0 0 0', paddingLeft: '20px' }}>
+                {summary.validationWarnings.map((warning, index) => (
+                  <li key={index}>
+                    <Typography variant="body2">{warning}</Typography>
+                  </li>
+                ))}
+              </ul>
+            </Alert>
+          </Box>
+        )}
+
       {summary && (
         <Box mb={2}>
           <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
@@ -260,37 +310,37 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
                 size="small"
               />
               <Chip
-                label={`Ads: ${summary.adCount}`}
+                label={`Ads: ${summary.adCount ?? 0}`}
                 size="small"
-                color={summary.adCount > 0 ? 'success' : 'error'}
+                color={(summary.adCount ?? 0) > 0 ? 'success' : 'error'}
               />
               <Chip
-                label={`Creatives: ${summary.creativeCount}`}
+                label={`Creatives: ${summary.creativeCount ?? 0}`}
                 size="small"
               />
               <Chip
-                label={`Impressions: ${summary.impressionCount}`}
+                label={`Impressions: ${summary.impressionCount ?? 0}`}
                 size="small"
               />
 
               {renderChip(
-                summary.companionAdCount > 0,
-                `Companions: ${summary.companionAdCount}`,
+                (summary.companionAdCount ?? 0) > 0,
+                `Companions: ${summary.companionAdCount ?? 0}`,
                 { color: 'primary' },
               )}
               {renderChip(
-                summary.iconCount > 0,
-                `Icons: ${summary.iconCount}`,
+                (summary.iconCount ?? 0) > 0,
+                `Icons: ${summary.iconCount ?? 0}`,
                 { color: 'secondary' },
               )}
               {renderChip(
                 summary.iconPrograms?.length > 0,
-                `Programs: ${summary.iconPrograms.join(', ')}`,
+                `Programs: ${summary.iconPrograms?.join(', ') || ''}`,
                 { color: 'secondary', variant: 'outlined' },
               )}
               {renderChip(
-                summary.adVerificationCount > 0,
-                `Ad Verifications: ${summary.adVerificationCount}`,
+                (summary.adVerificationCount ?? 0) > 0,
+                `Ad Verifications: ${summary.adVerificationCount ?? 0}`,
                 { color: 'info' },
               )}
               {renderChip(summary.hasOMID, 'OMID', {
@@ -298,36 +348,36 @@ const VastResponse = ({ vastResponse, onRefresh }) => {
                 variant: 'filled',
               })}
               {renderChip(
-                summary.mediaFileCount > 0,
-                `Media Files: ${summary.mediaFileCount}`,
+                (summary.mediaFileCount ?? 0) > 0,
+                `Media Files: ${summary.mediaFileCount ?? 0}`,
               )}
               {renderChip(
                 summary.mediaTypes?.length > 0,
-                `Types: ${summary.mediaTypes.join(', ')}`,
+                `Types: ${summary.mediaTypes?.join(', ') || ''}`,
                 { variant: 'outlined' },
               )}
               {renderChip(
-                summary.clickThroughCount > 0,
-                `Click Through: ${summary.clickThroughCount}`,
+                (summary.clickThroughCount ?? 0) > 0,
+                `Click Through: ${summary.clickThroughCount ?? 0}`,
                 { color: 'primary', variant: 'outlined' },
               )}
               {renderChip(
-                summary.clickTrackingCount > 0,
-                `Click Tracking: ${summary.clickTrackingCount}`,
+                (summary.clickTrackingCount ?? 0) > 0,
+                `Click Tracking: ${summary.clickTrackingCount ?? 0}`,
                 { color: 'primary', variant: 'outlined' },
               )}
               {renderChip(
-                summary.trackingEventTypes > 0,
-                `Event Types: ${summary.trackingEventTypes}`,
+                (summary.trackingEventTypes ?? 0) > 0,
+                `Event Types: ${summary.trackingEventTypes ?? 0}`,
               )}
               {renderChip(
                 summary.validationErrors?.length > 0,
-                `Errors: ${summary.validationErrors.length}`,
+                `Errors: ${summary.validationErrors?.length || 0}`,
                 { color: 'error' },
               )}
               {renderChip(
                 summary.validationWarnings?.length > 0,
-                `Warnings: ${summary.validationWarnings.length}`,
+                `Warnings: ${summary.validationWarnings?.length || 0}`,
                 { color: 'warning' },
               )}
             </Box>
