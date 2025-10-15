@@ -123,7 +123,13 @@ const fetchVastResponse = async (url, forceRefresh = false) => {
         return null;
       }
 
+      // Validate that we got actual content
       const vastXml = await response.text();
+      if (!vastXml || vastXml.trim().length === 0) {
+        console.warn('Empty VAST response received');
+        return null;
+      }
+
       console.log('Successfully fetched VAST response');
 
       const timestamp = Date.now();
